@@ -1,5 +1,7 @@
 # SDB-transcriptomics
-Bioinformatics analyses of data from the PhD research of Alicia Ware
+Bioinformatics analyses of data from the PhD research of Alicia Ware.
+
+The finalised appendix from my PhD thesis can be viewed directly at https://alicia-ware.github.io/SDB-transcriptomics/
 
 
 
