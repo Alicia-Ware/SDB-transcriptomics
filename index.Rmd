@@ -1,0 +1,2250 @@
+---
+title: "The transcriptional basis of  semi-dry biofilm formation by _Candida auris_"
+author: "Alicia Ware"
+date: "December 2023"
+output:
+  bookdown::html_document2:
+    code_folding: hide
+    df_print: paged
+    theme: cerulean
+    highlight: tango
+    toc: yes
+    toc_float: yes
+    toc_depth: 2 
+    collapsed: false
+    smooth_scroll: false
+    number_sections: true
+    fig_caption: yes
+---
+
+```{css, echo=FALSE}
+h1, h2{
+  text-align: left}
+  
+body{
+  text-align: justify;
+  font-size: 14px}
+  
+p.caption {
+  font-size: 12px;
+  font-style: bold;
+  color: #317EAC;
+  text-align: left}
+
+```
+
+```{r setup, include=FALSE}
+library(rmarkdown)
+library(bookdown)
+library(tinytex)
+library(knitr)
+library(tidyverse)
+library(tximport)
+library(edgeR)
+library(plotly)
+library(limma)
+library(gt)
+library(ggdendro)
+library(DT)
+library(rhdf5)
+library(datapasta)
+library(matrixStats)
+library(cowplot)
+library(stats)
+library(mdthemes)
+library(htmltools)
+library(gplots)
+library(viridis)
+library(gplots)
+library(heatmaply)
+library(ggVennDiagram)
+library(ontologyIndex)
+library(clusterProfiler)
+library(enrichplot)
+library(details)
+knitr::opts_chunk$set(echo=TRUE, warning=FALSE, message=FALSE)
+options(width=200)
+```
+
+# Introduction {#intro}
+
+_Candida auris_ is an enigmatic yeast recently named as one of four Critical Priority Group fungal pathogens by the World Health Organisation [(WHO, 2022)](https://www.who.int/publications/i/item/9789240060241). Whilst its ability to cause serious disseminated infections in vulnerable patients is concerning [(Singhal _et al._, 2023)](https://link.springer.com/article/10.1007/s12098-023-04672-z), of equal clinical concern is its ability to colonise the skin and mucosal surfaces of patients without symptoms [(Proctor _et al._, 2021)](https://doi.org/10.1038/s41591-021-01383-w), and to persist on surfaces, bedding and reusable equipment [(Welsh _et al._, 2017)](https://doi.org/10.1128/jcm.00921-17
+). This ability to persist in healthcare settings, often despite rigorous cleaning and disinfection protocols, presents key challenges for infection prevention and control of outbreaks and has been widely implicated in the transmissibility of _C. auris_ [(Piedrahita _et al._, 2017;](https://doi.org/10.1017/ice.2017.127) [Wong _et al_, 2023)](https://doi.org/10.1016/j.jhin.2022.12.020).
+
+Biofilm formation by _C. auris_ is a known virulence factor of this pathogen [(Horton & Nett, 2020)](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC7654955/), and likely contributes to its ability to survive and persist within the healthcare environment. Recently, _C. auris_ has shown limited ability to form _in vitro_ biofilms on dry surfaces [(Ledowoch & Maillard, 2018)](https://www.mdpi.com/1996-1944/12/1/18), although the isolate used in this study has since been characterised as a poor biofilm former [(Welsh _et al._, 2019)](https://doi.org/10.1128/jcm.00007-19). This type of biofilm has been widely studied _in situ_ using _Staphylococcus aureus_, where the organism has been detected on items and surfaces within the healthcare environment for long periods after use and/or disinfection [(Ledwoch _et al_, 2018)](https://doi.org/10.1016/j.jhin.2018.06.028). Experimental protocols of this biofilm model vary, but typically consist of alternating periods of growth in the presence and absence of liquid medium over 12 days [(Almatroudi _et al._, 2015)](https://linkinghub.elsevier.com/retrieve/pii/S0167701215300361). Previous work in this project has demonstrated that clinical  isolates of _C. auris_ from different phylogeographic backgrounds, and aggregative and biofilm-former phenotypes, developed robust biofilms using a semi-dry biofilm (SDB) protocol. Furthermore, the number of viable cells within these biofilms following surface disinfection with sodium hypochlorite (NaOCl), increased over successive cycles of growth, suggesting that this growth mode facilitates tolerance to biocidal agents.
+
+The biological mechanism behind SDB-mediated tolerance to NaOCl in these cells is unclear. The dry phase of the biofilm model may select for cells that are more intrinsically resistant to external stressors such as NaOCl, or that cells are primed to exhibit a robust stress response due to the ongoing stress conditions. The extracellular matrix and dead cells which accumulate as part of the biofilm's ultrastructure over time, may also act as a barrier that sequesters or slows the passage of the NaOCl molecules thereby reducing the effective concentration against live cells. This study used mRNA-sequencing (RNA-seq) and transcriptomics to identify cellular mechanisms of semi-dry biofilm formation, with a particular interest in genes which may contribute to NaOCl tolerance in biofilm cells. Sequencing was carried out on samples from planktonic (PK) and 12-day semi-dry biofilm (SDB) cells of two _C. auris_ isolates, NCPF8973 and NCPF8978, and transcriptomics analysis performed to investigate differential gene expression between SDB and PK cells by combining sequence data from both isolates. The research questions in this study were:
+
++ Which categories of genes are differentially expressed by _C. auris_ cells grown under SDB conditions, relative to planktonic cells?
++ Are there any individual genes or patterns of gene expression which may contribute to the tolerance of _C. auris_ SDB cells to NaOCl?
++ Are there any significant differences between mechanisms of SDB formation between NCPF8973 and NCPF8978?
+
+***
+
+# Laboratory methods {#methods}
+
+## Sample preparation {#samples}
+
+Two _C. auris_ isolates, NCPF8973 and NCPF8978, which are examples of the single-celled and aggregating growth phenotypes, respectively, were used in this study. For biofilm samples, overnight cultures grown in YPD broth were washed in PBS and standardised to 1x10$^6$ cells/mL in RPMI-1640 medium supplemented with 5% (v/v) foetal calf serum to replicate biological soiling. Cells were seeded into 6-well microtitre plates for growth as biofilms. Semi-dry biofilms (SDB) were grown for three cycles according to the protocol shown in **Fig.** **\@ref(fig:Samples)**, consisting of culture for 48 hr with growth medium ("hydrated" phase) followed by 48 hr without growth medium ("dry" phase), repeated a total of three times. Plates were incubated at room temperature at all times. Cells were harvested by scraping biomass from the wells of the microtitre plate.
+
+```{r Samples, fig.cap='**Laboratory protocol for growth of semi-dry biofilms**', fig.align='left', out.width='100%'}
+knitr::include_graphics('01_Semi-dry biofilm_Development.png')
+```
+
+<font size='2' color='#317EAC'> Red lines indicate the beginning of each wet phaseand brown lines  the beginning of each dry phase; blue dashed lines indicate the end of each cycle. Figure created using [Biorender](https://www.biorender.com/). </font>  
+
+Planktonic samples were grown overnight in YPD broth, washed in PBS and a total of 5x10$^8$ cells were harvested by centrifugation. Total RNA from planktonic and SDB samples was extracted and purified using the RiboPure Yeast RNA Extraction kit (Invitrogen, Vilnius, Lithuania). Three replicates of each isolate and growth mode were used in this study. 
+
+***
+
+## RNA sequencing and data files {#RNA-seq}
+
+Library preparation, RNA sequencing (RNA-seq) and quality control of raw read data were carried out by Novogene (Cambridge, UK). Paired-end 150 bp sequencing was carried out on the NovaSeq 6000 (Illumina, Cambridge, UK) using an S4 Flow Cell. The RNA-seq workflow from sample preparation to data analysis is summarised in **Fig.** **\@ref(fig:Pipeline)**. FastQC (v0.12.1) was used to perform quality control checks on raw sequencing files using prior to read-mapping. The remainder of this report details the steps taken for transcriptomics analysis of the RNA-seq data.  
+
+```{r Pipeline, fig.cap='**Pipeline for sample preparation, sequencing and transcriptomics analysis of semi-dry biofilms**', fig.align='left', out.width='75%'}
+knitr::include_graphics('01_Bioinf_pipeline.png')
+```
+
+<font size='2' color='#317EAC'> Total RNA was extracted from planktonic cells, as well as untreated semi-dry biofilms, and checked for quality by Bioanalyser (A). Samples were processed for mRNA enrichment and library preparation, and sequencing conducted on an Illumina NovaSeq 6000 sequencer (B). Bioinformatics analyses were carried out on quality-controlled RNA-seq data, using Kallisto, and R packages from the Bioconductor project (C). Reference data for _Candida auris_ strain B8441 were sourced from the Candida Genome Database (CGD), and Gene Ontology (GO) annotations were further sourced from the GO Consortium (GOC).</font>
+
+Data were analysed to elucidate patterns of differential gene expression in both isolates, as well as NCPF8973-only and NCPF8978-only. 
+
+***
+
+# Gene annotation and read mapping {#annotation-alignment}
+
+Genomic sequence data for _C. auris_ B8441 (v s01-m01-r31), a drug-susceptible clade I isolate, as well as gene annotations and GO term mappings were downloaded from the Candida Genome Database [(CGD;](http://www.candidagenome.org) [Skrzypek _et al._, 2017)](https://doi.org/10.1093/nar/gkw924)). These data were used in subsequent sections.
+
+## Building an indexed reference transcriptome {#index}
+
+Read mapping and quantification first requires an annotated, searchable list of gene sequences against which to compare the raw sequence data or "reads". The annotated or "indexed" reference transcriptome was built using [Kallisto](https://pachterlab.github.io/kallisto/), (v0.48.0). The _C. auris_ B8441 "current orf coding" [file](http://www.candidagenome.org/download/sequence/C_auris_B8441/current/C_auris_B8441_current_orf_coding.fasta.gz) genomic sequence file from CGD was indexed using the Kallisto index function with default arguments. All Kallisto functions in this and subsequent steps were carried out using the Terminal in R. The code for building the indexed transcriptome was as follows:
+
+> kallisto index -i C_auris_B8441_current_genome_index.index C_auris_B8441_current_orf_genomic.fasta.gz
+
+***
+
+## Aligning raw reads with Kallisto {#alignment}
+
+Raw sequence reads were mapped against the indexed transcriptome of _Candida auris_ strain B8441 to identify and quantify which gene sequences occurred in the data. Read-mapping was performed using the Kallisto quant function using the default arguments for paired-end reads, with an additional bootstrapping step of 100 samples. The code for read-mapping for one sample using kallisto is as follows:
+
+> kallisto quant -i C_auris_B8441_current_genome_index.index -o 73_PK_01  -t 6 -b 100 Data/A1_1.fq.gz Data/A1_2.fq.gz
+
+***
+
+## Gene annotations {#genes}
+
+Given the recent emergence of _C. auris_, much of the 5584 genomic features identified by CGD have yet to be characterised by bioinformatic or laboratory studies. Indeed, only 9 genes have been verified in _C. auris_ and have "common names", e.g. _MDR1_. An annotation file of _C. auris_ gene IDs and common names of orthologues in related species was therefore constructed for this analysis using the following resources from CGD.
+
+1. _C. auris_ gene IDs 
++ Supplied in the "current_features" [gff file](http://www.candidagenome.org/download/gff/C_auris_B8441/C_auris_B8441_current_features.gff).
++ This yields a data tibble of 5584 rows with the gene IDs in the format B9J08_xxxxxx.
+
+2. _Candida auris_  gene IDs and _Candida albicans_ orthologues
++ Mapping of _C. albicans_ orthologues for _C. auris_ is provided in the "C_auris_B8441_C_albicans_SC5314_orthologs" [text file](http://www.candidagenome.org/download/homology/orthologs/C_auris_B8441_C_albicans_SC5314_by_CGOB/C_auris_B8441_C_albicans_SC5314_orthologs.txt).
++ This yields a dataframe of 4752 rows, of which 2390 have orthologue IDs from _C. albicans_.
+
+3. _C. auris_ gene IDs mapped to _Saccharomyces cerevisiae_ orthologues 
++ A mapping of _S. cerevisiae_ orthologues for _C. auris_ gene IDs provided in the "current_chromosomal_features" [tab file](http://www.candidagenome.org/download/chromosomal_feature_files/C_auris_B8441/C_auris_B8441_current_chromosomal_feature.tab).
++ This yields a data tibble with 3006 rows, of which 2017 have common names or orthologue IDs from _S. cerevisiae_.
+
+These files were merged together to create an annotation file where any common names missing from the _C. albicans_ orthologues were copied from available _S. cerevisiae_ orthologues, and the _C. auris_ gene ID was retained for any transcripts for which a common name was not available, as shown in **Table** **\@ref(tab:Annotations)**.
+
+```{r Annotations}
+geneID <- "B9J08"
+gff <- read.delim(file="C_auris_B8441_current_features.gff", comment.char = "#", header = F)
+colnames(gff) <- c("seqname", "source", "feature", "start", "end", "score", "strand", "frame", "attribute")
+
+# Subset gene and pseudogene IDs only as a tibble
+gene <- as_tibble(gff[c(gff$feature=="gene", gff$feature=="pseudogene"),]) 
+gene <- gene[,9]
+gene <- separate(data=gene, col=attribute, into= c("ID", "Name", "Note","Orf_classification"), sep = "\\;")
+gene$C_aur_tx_ID <- substr(x=gene$ID,start=4, stop=15)
+gene<- gene[,5]
+
+# Read in "current chromosomal features" file from CGD 
+Tx <- read.table("C_auris_B8441_current_chromosomal_feature.tab", header = F, sep = "\t", fill = T, skip = 8) %>% as_tibble()
+
+# Rename columns of Tx tibble based on information from CGD
+colnames(Tx) <- c("C_aur_tx_ID", "Gene_name", "Aliases", "Feature_type", "Chromosome", "Start_coord", "Stop_coord", "Strand", "Primary_CGDID", "Secondary_CGBID", 
+                  "Description", "Date_created", "Sequence", "Blank_1", "Blank_2", "Date_of_gene_name_reservation", "Reserved_as_standard_name", 
+                  "S_cerevisiae_orthologues")
+
+# Merge files so far & rename columns based on tximport requirements
+gene_Tx <- merge(x=gene,y=Tx, by="C_aur_tx_ID", all.x =TRUE)
+gene_Tx <- gene_Tx %>% 
+  dplyr::rename("ID" = "C_aur_tx_ID") %>%
+  dplyr::select("ID", "Gene_name", "S_cerevisiae_orthologues")
+
+# Copy all 15 C. auris gene names to orthologues column for now
+gene_Tx$S_cerevisiae_orthologues <- ifelse(gene_Tx$Gene_name!="", gene_Tx$Gene_name, gene_Tx$S_cerevisiae_orthologues)
+
+# Read in C_alb to C_auris orthologue mappings from CGD 
+Calb_Caur_all <- read.delim(file = "C_auris_B8441_C_albicans_SC5314_orthologs_AW.txt", header = F)
+colnames(Calb_Caur_all) <- c("C_aur_tx_ID","C_aur_gene","C_aur_CGDID","C_alb_tx_ID","C_alb_gene","C_alb_CGDID")
+
+# Select gene names & map to transcript IDs
+Calb_Caur <- Calb_Caur_all %>% 
+  dplyr::select("C_aur_tx_ID", "C_alb_gene") %>% 
+  dplyr::rename("ID" = "C_aur_tx_ID")
+
+# Merge this with previous Tx data set to get as complete a picture of gene names as possible right now
+Tx_map <- base::merge(gene_Tx, Calb_Caur, by = "ID", all.x= TRUE, all.y= TRUE)
+
+# Replace NA and empty values in C_alb list with values in S_cerevisiae list, then replace 'NA' values with empty cells
+Tx_map$C_alb_gene<- ifelse(is.na(Tx_map$C_alb_gene), Tx_map$S_cerevisiae_orthologues, Tx_map$C_alb_gene)
+Tx_map$C_alb_gene<- ifelse(Tx_map$C_alb_gene== "", Tx_map$S_cerevisiae_orthologues, Tx_map$C_alb_gene)
+Tx_map$C_alb_gene<- ifelse(is.na(Tx_map$C_alb_gene), "", Tx_map$C_alb_gene)
+
+# Reorder columns in map tibble
+Tx_map <- Tx_map[ ,c(1, 4, 2, 3)]
+
+# Delete columns of duplicate data
+Tx_map <- Tx_map[, -c(3,4)]
+
+# Re-order rows of data frame based on ID ## This is purely for aesthetic reasons
+Tx_map <- Tx_map[order(Tx_map$ID),, drop=TRUE]
+row.names(Tx_map) <- NULL
+Tx_map <- dplyr::rename(Tx_map, "Name" 
+                     = "C_alb_gene")
+
+# Copy over IDs to areas where the gene names are missing
+Tx_map$ID_Name<-ifelse(Tx_map$Name=="",Tx_map$ID,Tx_map$Name)
+Tx_map<-Tx_map[,-2]
+Tx_map <- Tx_map[-c(5582:5584),]
+
+knitr::kable(
+  Tx_map[c(6:11),], booktabs=TRUE, caption= "**Sample gene annotation data containing available common names**")
+```
+
+````{r step 2.2B Annotations, eval=TRUE, include=FALSE}
+# Add in manual entries for genes as necessary!
+Tx_map$ID_Name[4237]<- "CAP01"
+Tx_map$ID_Name[1298]<- "PRS11"
+Tx_map$ID_Name[1721]<- "B9J08_001723"
+Tx_map$ID_Name[1443]<- "B9J08_001444"
+Tx_map$ID_Name[4752]<- "B9J08_004756"
+Tx_map$ID_Name[368] <- "MDR2"
+Tx_map$ID_Name[1125] <-"SNQ2"
+Tx_map$ID_Name[2449] <- "CDR2"
+Tx_map$ID_Name[4494] <- "ALS3"
+Tx_map$ID_Name[3795] <- "MP65"
+Tx_map$ID_Name[4914] <- "HSP90"
+Tx_map$ID_Name[774] <- "PAB1"
+Tx_map$ID_Name[929] <- "ESC1"
+Tx_map$ID_Name[1587] <- "MYG1"
+Tx_map$ID_Name[1883] <- "RPL22B"
+Tx_map$ID_Name[2314] <- "TRM8"
+Tx_map$ID_Name[4356] <- "FSH3"
+Tx_map$ID_Name[4489] <- "CLU1"
+Tx_map$ID_Name[4498] <- "UTP14"
+Tx_map$ID_Name[4570] <- "RPL7A"
+Tx_map$ID_Name[2544] <- "DMO2"
+Tx_map$ID_Name[5318]<- "B9J08_005322"
+Tx_map$ID_Name[4735]<- "B9J08_004739"
+Tx_map$ID_Name[4752]<- "NRG1"
+Tx_map$ID_Name[228]<- "BUD3"
+Tx_map$ID_Name[398]<- "YPS3"
+Tx_map$ID_Name[811]<- "NDL1"
+Tx_map$ID_Name[826]<- "BNI5"
+Tx_map$ID_Name[1231]<- "PMU1"
+Tx_map$ID_Name[1557]<- "BBH1"
+Tx_map$ID_Name[1569]<- "JLP1"
+Tx_map$ID_Name[2009]<- "FMO1"
+Tx_map$ID_Name[1867]<- "AIM7"
+Tx_map$ID_Name[2258]<- "NAS6"
+Tx_map$ID_Name[2789]<- "PYP1"
+Tx_map$ID_Name[4335]<- "CYK3"
+Tx_map$ID_Name[4783]<- "IFR1"
+Tx_map$ID_Name[4826]<- "THI73"
+Tx_map$ID_Name[1787]<- "UME7"
+Tx_map$ID_Name[3621]<- "ACP12"
+Tx_map$ID_Name[3610]<- "ADH2"
+Tx_map$ID_Name[1395]<- "SKI6"
+Tx_map$ID_Name[2567]<- "RAD27"
+Tx_map$ID_Name[66]<- "B9J08_000066"
+Tx_map$ID_Name[2940]<- "AVT11"
+Tx_map$ID_Name[5478]<- "HAP31"
+Tx_map$ID_Name[2184]<- "HMN2"
+Tx_map$ID_Name[105]<- "DCP2"
+Tx_map$ID_Name[612]<- "RRP43"
+Tx_map$ID_Name[1672]<- "NOP5"
+Tx_map$ID_Name[4023]<- "WOR1"
+Tx_map$ID_Name[1482]<- "MNN41"
+Tx_map$ID_Name[71]<- "LSP1"
+Tx_map$ID_Name[4644]<- "PRB12"
+Tx_map$ID_Name[2963]<- "B9J08_002965"
+Tx_map$ID_Name[979]<- "CET1"
+Tx_map$ID_Name[4718]<- "CMD2"
+Tx_map$ID_Name[3723]<- "SUV3"
+Tx_map$ID_Name[2645]<- "HNT32"
+Tx_map$ID_Name[57]<- "SNO1"
+Tx_map$ID_Name[3805]<- "SOL2"
+Tx_map$ID_Name[311]<- "RRP42"
+Tx_map$ID_Name[3182]<- "TES2"
+Tx_map$ID_Name[2558]<- "RBR2"
+Tx_map$ID_Name[2735]<- "UGA21"
+Tx_map$ID_Name[3206]<- "PET54"
+Tx_map$ID_Name[4307]<- "NOP19"
+Tx_map$ID_Name[5374]<- "BUD17"
+Tx_map$ID_Name[1736]<- "BUL5"
+Tx_map$ID_Name[1352]<- "B9J08_001353"
+Tx_map$ID_Name[42]<- "CHA1"
+Tx_map$ID_Name[3044]<- "CHA2"
+Tx_map$ID_Name[5355]<- "SUN41"
+Tx_map$ID_Name[2296]<- "CAT1"
+Tx_map$ID_Name[964]<- "FKS1"
+Tx_map$ID_Name[1020]<- "FKS2"
+Tx_map$ID_Name[813]<- "BBH2"
+Tx_map$ID_Name[1877]<- "TRM7"
+````
+
+
+
+The annotation file constructed for this analysis contains information for  `r nrow(Tx_map)` genes, of which there are `r sum(grepl(geneID, Tx_map$ID_Name, fixed=TRUE))` genes without a common name.
+
+***
+
+## Importing Kallisto count data into R {#tximport}
+
+Expression data contained within the “abundance” output files from Kallisto were counted and read into the RStudio environment using the [TxImport](https://bioconductor.org/packages/tximport/) package (v1.28.0). The B9J08_xxxxxx gene names were maintained as the gene IDs to prevent errors resulting from the mixed common name/ gene ID format constructed in the annotation file. This file was later used to map the transcript IDs back to the mixed name/ID format as necessary.
+
+```{r Step 2.1 & 2.3 - TxImport}
+targets <- read_csv("study_design.csv")
+path <- file.path(targets$Sample, "abundance.tsv")
+
+Txi_gene <- tximport(path, 
+                     type = "kallisto", 
+                     tx2gene = Tx_map, #object containing 2 columns: transcript id and "gene" id; must be in this order 
+                     txOut = T, #get transcript names out, not gene names (since incomplete list)
+                     countsFromAbundance = "scaledTPM",
+                     ignoreTxVersion = TRUE)
+```
+
+***
+
+# Filtering and normalisation of count data {#filt-norm .tabset .tabset-pills}
+
+A DGEList object was created using the eponymous function from the [EdgeR](	https://bioconductor.org/packages/edgeR/) package, with raw read count data for each sample. This object is a specialised object which stores the counts per each gene for each sample, as well as additional information such as library size (i.e. total number of reads) and normalisation factors. Data in the DGEList were converted to counts per million reads and log2-transformed (log2cpm) to account for heteroscedasticity in the dataset, filtered to remove genes with low counts across a minimum of 6 samples, and then normalised to account for the variation between samples in terms of library size and count distribution across genes.A tibble containing the log-cpm determined for each sample was created and used henceforth.
+
+## Combined analysis {#fna1}
+
+```{r 3.1-4a1 DGEList}
+targets_a1 <- read.csv("Study_design_a1.csv",header = T, sep = ",", check.names = F)
+sampleLabels_a1 <- targets_a1$Sample
+Group_a1 <- targets_a1$Group
+colnames_a1 <- targets_a1$`Colnames for analysis`
+
+Counts <- Txi_gene$counts
+Counts_a1 <- Counts[,1:12]
+
+DGEList_a1 <- DGEList(counts = Counts_a1, group= Group_a1)
+cpm_a1 <- cpm(DGEList_a1)
+
+keepers_a1 <- rowSums(cpm_a1>1)>=6
+
+filt_DGEList_a1 <- DGEList_a1[keepers_a1,]
+filt_log2_cpm_a1 <- cpm(filt_DGEList_a1, log=TRUE)
+
+norm_filt_DGEList_a1 <- calcNormFactors(filt_DGEList_a1, method = "TMM")
+log2_cpm_norm_filt_DGEList_a1 <- cpm(norm_filt_DGEList_a1, log=T)
+df_log2_cpm_norm_filt_a1 <- as_tibble(log2_cpm_norm_filt_DGEList_a1, rownames = "Name")
+colnames(df_log2_cpm_norm_filt_a1) <- c("Name", colnames_a1)
+colnames(log2_cpm_norm_filt_DGEList_a1) <- sampleLabels_a1
+```
+
+Prior to filtering, the combined data were first examined to see how many genes had little to no expression across either all samples or within one group of samples. In the first instance, the number of genes for which the statement "there is no expression data across all twelve samples" was true is demonstrated in the output below.
+```{r crit1a1}
+table(rowSums(DGEList_a1$counts==0)==12)
+```
+
+In the combined isolate analysis the smallest group size for which relevant comparisons could be made was six samples, so the true/false statement above was repeated for at least this number of samples and the results shown below.
+```{r crit2a1} 
+table(rowSums(DGEList_a1$counts==0)>=6)
+```
+
+The DGEList object was thus filtered to remove genes with little-to-no count data. Genes for which less than one count per million was found in in at least 6 samples were removed from the data set. Data were then normalised to the library size to account for genes which are typically highly or lowly expressed within cells. Filtering and normalising the count data reduced the number of genes from `r nrow(DGEList_a1)` to `r nrow(filt_DGEList_a1)`.
+
+***
+
+## NCPF8973 {#fna4}
+
+```{r 3.1-4a4 DGEList}
+targets_a4 <- read.csv("Study_design_a4.csv",header = T, sep = ",", check.names = F)
+sampleLabels_a4 <- targets_a4$Sample
+Group_a4 <- targets_a4$Group
+colnames_a4 <- targets_a4$`Colnames for analysis`
+
+Counts <- Txi_gene$counts
+Counts_a4 <- Counts[,c(1:3,7:9)]
+
+DGEList_a4 <- DGEList(counts = Counts_a4, group= Group_a4)
+cpm_a4 <- cpm(DGEList_a4)
+
+keepers_a4 <- rowSums(cpm_a4>1)>=3
+
+filt_DGEList_a4 <- DGEList_a4[keepers_a4,]
+filt_log2_cpm_a4 <- cpm(filt_DGEList_a4, log=TRUE)
+
+norm_filt_DGEList_a4 <- calcNormFactors(filt_DGEList_a4, method = "TMM")
+log2_cpm_norm_filt_DGEList_a4 <- cpm(norm_filt_DGEList_a4, log=T)
+df_log2_cpm_norm_filt_a4 <- as_tibble(log2_cpm_norm_filt_DGEList_a4, rownames = "Name")
+colnames(df_log2_cpm_norm_filt_a4) <- c("Name", colnames_a4)
+colnames(log2_cpm_norm_filt_DGEList_a4) <- sampleLabels_a4
+```
+
+Prior to filtering, the data from PK and SDB samples of NCPF8973 were first examined to see how many genes had little-to-no expression across either all samples or within one group of samples. In the first instance, the number of genes for which the statement "there is no expression data across all twelve samples" was true is demonstrated in the output below.
+```{r crit1a4}
+table(rowSums(DGEList_a4$counts==0)==6)
+```
+
+In the single isolate analysis for NCPF8973 the smallest group size for which relevant comparisons could be made was three replicates, so the true/false statement above was repeated for at least this number of samples and the results shown below.
+```{r crit2a4} 
+table(rowSums(DGEList_a4$counts==0)>=3)
+```
+
+The DGEList object was thus filtered to remove genes with little or no count data. Genes for which less than one count per million was found in in at least 6 samples were removed from the data set. Data were then normalised to the library size to account for genes which are typically highly or lowly expressed within cells. Filtering and normalising the count data reduced the number of genes from `r nrow(DGEList_a4)` to `r nrow(filt_DGEList_a4)`.
+
+## NCPF8978 {#fna7}
+
+```{r 3.1-4a7 DGEList}
+targets_a7 <- read.csv("Study_design_a7.csv",header = T, sep = ",", check.names = F)
+sampleLabels_a7 <- targets_a7$Sample
+Group_a7 <- targets_a7$Group
+colnames_a7 <- targets_a7$`Colnames for analysis`
+
+Counts <- Txi_gene$counts
+Counts_a7 <- Counts[,c(4:6,10:12)]
+
+DGEList_a7 <- DGEList(counts = Counts_a7, group= Group_a7)
+cpm_a7 <- cpm(DGEList_a7)
+
+keepers_a7 <- rowSums(cpm_a7>1)>=3
+
+filt_DGEList_a7 <- DGEList_a7[keepers_a7,]
+filt_log2_cpm_a7 <- cpm(filt_DGEList_a7, log=TRUE)
+
+norm_filt_DGEList_a7 <- calcNormFactors(filt_DGEList_a7, method = "TMM")
+log2_cpm_norm_filt_DGEList_a7 <- cpm(norm_filt_DGEList_a7, log=T)
+df_log2_cpm_norm_filt_a7 <- as_tibble(log2_cpm_norm_filt_DGEList_a7, rownames = "Name")
+colnames(df_log2_cpm_norm_filt_a7) <- c("Name", colnames_a7)
+colnames(log2_cpm_norm_filt_DGEList_a7) <- sampleLabels_a7
+```
+
+Prior to filtering, the data from PK and SDB samples of NCPF8978 were first examined to see how many genes had little-to-no expression across either all samples or within one group of samples. In the first instance, the number of genes for which the statement "there is no expression data across all twelve samples" was true is demonstrated in the output below.
+```{r crit1a7}
+table(rowSums(DGEList_a7$counts==0)==6)
+```
+
+In the single isolate analysis for NCPF8978 the smallest group size for which relevant comparisons could be made was three replicates, so the true/false statement above was repeated for at least this number of samples and the results shown below.
+```{r crit2a7} 
+table(rowSums(DGEList_a7$counts==0)>=3)
+```
+
+The DGEList object was thus filtered to remove genes with little or no count data. Genes for which less than one count per million was found in in at least 6 samples were removed from the data set. Data were then normalised to the library size to account for genes which are typically highly or lowly expressed within cells. Filtering and normalising the count data reduced the number of genes from `r nrow(DGEList_a7)` to `r nrow(filt_DGEList_a7)`.
+
+# Multivariate statistics on biological replicates {#stats .tabset .tabset-pills}
+
+Multivariate analyses were performed on filtered, normalised count data using the base stats package (v4.3.0) from R to assess the similarity of biological replicates and determine significant sources of variance between samples. Two methods were used, hierarchical clustering and principal component analysis.
+
+## Combined analysis {#statsa1}
+### Hierarchical clustering of samples {#h-clusta1}
+
+Samples were compared using an unsupervised hierarchical clustering algorithm to determine whether biological replicates of the same sample had consistent RNA-seq profiles with each other. First, a distance matrix was calculated between samples using log-cpm data and the Maximum Distance algorithm. Samples were clustered using complete agglomeration and the output represented as a dendrogram (**Fig.** **\@ref(fig:hclusta1)**).
+
+```{r hclusta1,  fig.cap= "**Hierarchical clustering of samples reveals isolate-specific patterns of gene expression**", out.width="70%"}
+group_a1 <- factor(targets_a1$Group) ##abbreviated version of group name for samples
+growth_a1 <- factor(targets_a1$`Full group`) ##extended version of group name, for labelling plots, etc
+phenotype_a1 <- factor(targets_a1$`Cellular Phenotype`) ##growth phenotype of isolate
+
+colnames(log2_cpm_norm_filt_DGEList_a1) <- sampleLabels_a1
+distance_a1 <- dist(t(log2_cpm_norm_filt_DGEList_a1), method = "maximum")
+clusters_a1 <- hclust(distance_a1, method = "complete")
+a1_dendro <- ggdendrogram(clusters_a1, rotate= FALSE, labels = TRUE)+
+  ylab("Distance")+
+  theme_classic()+
+  theme(axis.line.x = element_blank(),
+        axis.ticks.x=element_blank(),
+        axis.text.x = element_text(angle=90, size=14),
+        axis.text.y = element_text(size=12),
+        axis.title.x = element_blank(),
+        axis.title.y = element_text(angle=90, size=12, margin=margin(t=0,r=15,b=0,l=0)))
+a1_dendro
+```
+<font size='2' color='#317EAC'> Log<sub>2</sub>-transformed expression data from semi-dry biofilms (SDB) and planktonic (PK) cells were compared using unsupervised statistical analyses to examine patterns of expression between samples. Hierarchical clustering based on expression across all genes, was visualised as a dendrogram showing relative distance or similarity between samples.</font>
+
+Samples clustered first by isolate, then by growth mode, suggesting that gene expression patterns might be highly isolate-specific. Furthermore, the replicates of each sample grouped quite closely, suggesting consistent RNA-seq profiles across the three independent experiments as denoted by _01, _02 and _03 at the end of each sample name.
+
+***
+
+### Principal component analysis and plots {#pcaa1}
+
+Principal component analysis (PCA) was used to identify variables which explain the variance between samples. Twelve principal components (PCs) which accounted for the total variance of the dataset, were identified using PCA (**Fig,** **\@ref(fig:screea1)**).
+
+```{r screea1, fig.cap="**Screeplot of principal components, and their respective and cumulative variance**", out.width="65%"}
+pca_result_a1 <- prcomp(t(log2_cpm_norm_filt_DGEList_a1), scale.=F, retx=T)
+pc_variance_a1 <-pca_result_a1$sdev^2 
+pc_per_a1<-tibble(round(pc_variance_a1/sum(pc_variance_a1)*100, 1))
+colnames(pc_per_a1) <-"Variance"
+pc_per_a1 <- pc_per_a1 %>% dplyr::mutate("Cumulative variance"= cumsum(Variance),
+                                         "cv_col"="#FFC300",
+                                         "Principal component"= seq(1:12),
+                                         "pc_col"="#87CEEB")
+
+df_pca_results_a1 <-as_tibble(pca_result_a1$x)
+
+scree_a1 <- ggplot(pc_per_a1) +
+  geom_col(aes(y=Variance,x=`Principal component`, fill=factor(`Principal component`)))+
+  scale_fill_manual(values=c(pc_per_a1$pc_col))+
+  geom_line(aes(x=`Principal component`, y=`Cumulative variance`, colour=cv_col))+
+  geom_point(aes(x=`Principal component`, y=`Cumulative variance`, colour=cv_col), size=1)+
+  scale_colour_manual(values=c("#FFC300"="#FFC300"))+
+  geom_hline(yintercept=80, linetype=2)+
+  scale_x_continuous(breaks=seq(1:12))+
+  scale_y_continuous(name="Variance (%)",breaks=seq(from=0, to=100,by=10))+
+  theme_classic()+
+  theme(legend.position ="none")
+scree_a1
+```
+
+<font size='2' color='#317EAC'> Principal component (PC) analysis was performed to identify major sources of variability between samples. The respective variance accounted for by each PC was shown as blue bars on the scree plot, with the cumulative variance as a yellow line. </font>
+
+The first 2 PCs accounted for `r pc_per_a1$"Cumulative variance"[2]` of the variance and were subsequently plotted against each other to identify which of the known variables these may represent (**Fig.** **\@ref(fig:PCAa1)**).
+
+```{r PCAa1, fig.cap="**Principal components 1 and 2 show gene expression in planktonic and semi-dry biofilms is specific to isolate and growth mode**"}
+`Growth mode` <- growth_a1
+Phenotype <- phenotype_a1
+Sample <- sampleLabels_a1
+pca_plot_1_a1<- ggplot(df_pca_results_a1,
+                       aes(x=PC1, y=PC2, label=Sample, colour=`Growth mode`, shape=Phenotype)) +
+  geom_point(size=8, alpha=0.6)+
+  scale_colour_manual(values=c("Planktonic"="#2596be", "Biofilm"="#eb4034"))+ ##add custom colour scale for values
+  xlab(paste0("PC1 (",pc_per_a1[1,1],"%",")"))+
+  ylab(paste0("PC2 (",pc_per_a1[2,1],"%",")"))+
+  labs(col="Growth mode &", shape="phenotype",
+       ) +
+  coord_fixed()+
+  theme_bw()+
+  theme(legend.position = "bottom", #adds legend to the bottom of the figure
+        legend.box = "vertical", #causes the legend to sit as 2 rows within a "box" element
+        legend.margin = margin(t=0,r=0,b=0,l=0),
+        legend.text =element_text(size=14),
+        legend.title=element_text(size=14),
+        plot.margin=margin(t=5,r=0,b=0,l=0),
+        axis.title = element_text(size=14),
+        axis.text = element_text(size=14))
+int_pc1_pc2 <- ggplotly(pca_plot_1_a1)
+int_pc1_pc2
+```
+
+<font size='2' color='#317EAC'> The first two PCs were plotted against each other, showing the percentage of the total variance accounted for by each PC. Samples are coded by colour for growth mode, and shape for phenotype of isolate, where NCPF8973 is single-celled and NCPF8978 is aggregating. </font>
+
+In this analysis, the first PC accounted for `r pc_per_a1$Variance[1]`% of the variance and was likely the growth mode, as planktonic samples clustered to the left and biofilm to the right of the plot. The second PC, which accounted for a further `r pc_per_a1$Variance[2]`% of the variance, was likely isolate and/or cellular phenotype, as samples clustered by single-celled or aggregating isolates.
+
+The outputs of both statistical analyses show distinct differences between the semi-dry biofilm and planktonic samples, and likely also isolate-specific trends which can be investigated in a further sub-analysis by isolate.
+
+***
+
+## NCPF8973 {#statsa4}
+### Hierarchical clustering of samples {#h-clusta4}
+
+Samples from isolate NCPF8973 were further compared in isolation  using an unsupervised hierarchical clustering algorithm to determine whether biological replicates of the same sample had consistent RNA-seq profiles with each other. First, a distance matrix was calculated between samples using log-cpm data and the Maximum Distance algorithm. Samples were clustered using complete agglomeration and the output represented as a dendrogram (**Fig.** **\@ref(fig:hclusta4)**).
+
+```{r hclusta4,  fig.cap= "**Hierarchical clustering of NCPF8973 samples**", out.width="70%"}
+group_a4 <- factor(targets_a4$Group) ##abbreviated version of group name for samples
+growth_a4 <- factor(targets_a4$`Full group`) ##extended version of group name, for labelling plots, etc
+phenotype_a4 <- factor(targets_a4$`Cellular Phenotype`) ##growth phenotype of isolate
+
+colnames(log2_cpm_norm_filt_DGEList_a4) <- sampleLabels_a4
+distance_a4 <- dist(t(log2_cpm_norm_filt_DGEList_a4), method = "maximum")
+clusters_a4 <- hclust(distance_a4, method = "complete")
+a4_dendro <- ggdendrogram(clusters_a4, rotate= FALSE, labels = TRUE)+
+  ylab("Distance")+
+  theme_classic()+
+  theme(axis.line.x = element_blank(),
+        axis.ticks.x=element_blank(),
+        axis.text.x = element_text(angle=90, size=14),
+        axis.text.y = element_text(size=12),
+        axis.title.x = element_blank(),
+        axis.title.y = element_text(angle=90, size=12, margin=margin(t=0,r=15,b=0,l=0)))
+a4_dendro
+```
+<font size='2' color='#317EAC'> Log<sub>2</sub>-transformed expression data from semi-dry biofilms (SDB) and planktonic (PK) cells were compared using unsupervised statistical analyses to examine patterns of expression between samples. Hierarchical clustering based on expression across all genes, was visualised as a dendrogram showing relative distance or similarity between samples.</font>
+
+Samples clustered by growth mode, as expected. The replicates of samples grouped quite closely, suggesting consistent RNA-seq profiles across the three independent experiments as denoted by _01, _02 and _03 at the end of each sample name.
+
+***
+
+### Principal component analysis and plots {#pcaa4}
+
+Principal component analysis (PCA) was used to identify variables which explain the variance between samples. Twelve principal components (PCs) which accounted for the total variance of the dataset, were identified using PCA (**Fig.** **\@ref(fig:screea4)**).
+
+```{r screea4, fig.cap="**Screeplot of principal components, and their respective and cumulative variance**", out.width="65%"}
+pca_result_a4 <- prcomp(t(log2_cpm_norm_filt_DGEList_a4), scale.=F, retx=T)
+pc_variance_a4 <-pca_result_a4$sdev^2 
+pc_per_a4<-tibble(round(pc_variance_a4/sum(pc_variance_a4)*100, 1))
+colnames(pc_per_a4) <-"Variance"
+pc_per_a4 <- pc_per_a4 %>% dplyr::mutate("Cumulative variance"= cumsum(Variance),
+                                         "cv_col"="#FFC300",
+                                         "Principal component"= seq(1:6),
+                                         "pc_col"="#87CEEB")
+
+df_pca_results_a4 <-as_tibble(pca_result_a4$x)
+
+scree_a4 <- ggplot(pc_per_a4) +
+  geom_col(aes(y=Variance,x=`Principal component`, fill=factor(`Principal component`)))+
+  scale_fill_manual(values=c(pc_per_a4$pc_col))+
+  geom_line(aes(x=`Principal component`, y=`Cumulative variance`, colour=cv_col))+
+  geom_point(aes(x=`Principal component`, y=`Cumulative variance`, colour=cv_col), size=1)+
+  scale_colour_manual(values=c("#FFC300"="#FFC300"))+
+  geom_hline(yintercept=80, linetype=2)+
+  scale_x_continuous(breaks=seq(1:6))+
+  scale_y_continuous(name="Variance (%)",breaks=seq(from=0, to=100,by=10))+
+  theme_classic()+
+  theme(legend.position ="none")
+scree_a4
+```
+
+<font size='2' color='#317EAC'> Principal component (PC) analysis was performed to identify major sources of variability between samples. The respective variance accounted for by each PC was shown as blue bars on the scree plot, with the cumulative variance as a yellow line. </font>
+
+The first 2 PCs accounted for `r pc_per_a4$"Cumulative variance"[2]` of the variance and were subsequently plotted against each other to identify which of the known variables these may represent (**Fig.** **\@ref(fig:PCAa4)**).
+
+```{r PCAa4, fig.cap="**Principal components 1 and 2 show gene expression in planktonic and semi-dry biofilms is specific to growth mode**"}
+`Growth mode` <- growth_a4
+Phenotype <- phenotype_a4
+Sample <- sampleLabels_a4
+pca_plot_1_a4<- ggplot(df_pca_results_a4,
+                       aes(x=PC1, y=PC2, label=Sample, colour=`Growth mode`))+
+  geom_point(size=8, alpha=0.6)+
+  scale_colour_manual(values=c("Planktonic"="#2596be", "Biofilm"="#eb4034"))+ ##add custom colour scale for values
+  xlab(paste0("PC1 (",pc_per_a4[1,1],"%",")"))+
+  ylab(paste0("PC2 (",pc_per_a4[2,1],"%",")"))+
+  labs(col="Growth mode &", shape="phenotype",
+       ) +
+  coord_fixed()+
+  theme_bw()+
+  theme(legend.position = "bottom", #adds legend to the bottom of the figure
+        legend.box = "vertical", #causes the legend to sit as 2 rows within a "box" element
+        legend.margin = margin(t=0,r=0,b=0,l=0),
+        legend.text =element_text(size=14),
+        legend.title=element_text(size=14),
+        plot.margin=margin(t=5,r=0,b=0,l=0),
+        axis.title = element_text(size=14),
+        axis.text = element_text(size=14))
+int_pc1_pc2 <- ggplotly(pca_plot_1_a4)
+int_pc1_pc2
+```
+
+<font size='2' color='#317EAC'> The first two PCs were plotted against each other, showing the percentage of the total variance accounted for by each PC. Samples are coded by colour for growth mode. </font>
+
+In this analysis, the first PC accounted for `r pc_per_a4$Variance[1]`% of the variance and was likely the growth mode, as planktonic samples clustered to the left and biofilm to the right of the plot. The second PC, which accounted for a further `r pc_per_a4$Variance[2]`% of the variance, was likely the experiment number, as replicates _01 grouped towards the top of the axis, and _03 towards the bottom.
+
+***
+
+
+## NCPF8978 {#statsa7}
+### Hierarchical clustering of samples {#h-clusta7}
+
+Samples were compared using an unsupervised hierarchical clustering algorithm to determine whether biological replicates of the same sample had consistent RNA-seq profiles with each other. First, a distance matrix was calculated between samples using log-cpm data and the Maximum Distance algorithm. Samples were clustered using complete agglomeration and the output represented as a dendrogram (**Fig.** **\@ref(fig:hclusta7)**).
+
+```{r hclusta7,  fig.cap= "**Hierarchical clustering of samples**", out.width="70%"}
+group_a7 <- factor(targets_a7$Group) ##abbreviated version of group name for samples
+growth_a7 <- factor(targets_a7$`Full group`) ##extended version of group name, for labelling plots, etc
+phenotype_a7 <- factor(targets_a7$`Cellular Phenotype`) ##growth phenotype of isolate
+
+colnames(log2_cpm_norm_filt_DGEList_a7) <- sampleLabels_a7
+distance_a7 <- dist(t(log2_cpm_norm_filt_DGEList_a7), method = "maximum")
+clusters_a7 <- hclust(distance_a7, method = "complete")
+a7_dendro <- ggdendrogram(clusters_a7, rotate= FALSE, labels = TRUE)+
+  ylab("Distance")+
+  theme_classic()+
+  theme(axis.line.x = element_blank(),
+        axis.ticks.x=element_blank(),
+        axis.text.x = element_text(angle=90, size=14),
+        axis.text.y = element_text(size=12),
+        axis.title.x = element_blank(),
+        axis.title.y = element_text(angle=90, size=12, margin=margin(t=0,r=15,b=0,l=0)))
+a7_dendro
+```
+<font size='2' color='#317EAC'> Log<sub>2</sub>-transformed expression data from NCPF8978 grown as semi-dry biofilms (SDB) and planktonic (PK) cells were compared using unsupervised statistical analyses to examine patterns of expression between samples. Hierarchical clustering based on expression across all genes, was visualised as a dendrogram showing relative distance or similarity between samples.</font>
+
+Samples clustered by growth mode, as expected. Replicates of each sample grouped quite closely, suggesting consistent RNA-seq profiles across the three independent experiments as denoted by _01, _02 and _03 at the end of each sample name.
+
+***
+
+### Principal component analysis and plots {#pcaa7}
+
+Principal component analysis (PCA) was used to identify variables which explain the variance between samples. Twelve principal components (PCs) which accounted for the total variance of the dataset, were identified using PCA (**Fig.** **\@ref(fig:screea7)**).
+
+```{r screea7, fig.cap="**Screeplot of principal components, and their respective and cumulative variance**", out.width="65%"}
+pca_result_a7 <- prcomp(t(log2_cpm_norm_filt_DGEList_a7), scale.=F, retx=T)
+pc_variance_a7 <-pca_result_a7$sdev^2 
+pc_per_a7<-tibble(round(pc_variance_a7/sum(pc_variance_a7)*100, 1))
+colnames(pc_per_a7) <-"Variance"
+pc_per_a7 <- pc_per_a7 %>% dplyr::mutate("Cumulative variance"= cumsum(Variance),
+                                         "cv_col"="#FFC300",
+                                         "Principal component"= seq(1:6),
+                                         "pc_col"="#87CEEB")
+
+df_pca_results_a7 <-as_tibble(pca_result_a7$x)
+
+scree_a7 <- ggplot(pc_per_a7) +
+  geom_col(aes(y=Variance,x=`Principal component`, fill=factor(`Principal component`)))+
+  scale_fill_manual(values=c(pc_per_a7$pc_col))+
+  geom_line(aes(x=`Principal component`, y=`Cumulative variance`, colour=cv_col))+
+  geom_point(aes(x=`Principal component`, y=`Cumulative variance`, colour=cv_col), size=1)+
+  scale_colour_manual(values=c("#FFC300"="#FFC300"))+
+  geom_hline(yintercept=80, linetype=2)+
+  scale_x_continuous(breaks=seq(1:6))+
+  scale_y_continuous(name="Variance (%)",breaks=seq(from=0, to=100,by=10))+
+  theme_classic()+
+  theme(legend.position ="none")
+scree_a7
+```
+
+<font size='2' color='#317EAC'> Principal component (PC) analysis was performed to identify major sources of variability between samples. The respective variance accounted for by each PC was shown as blue bars on the scree plot, with the cumulative variance as a yellow line. </font>
+
+The first 2 PCs accounted for `r pc_per_a7$"Cumulative variance"[2]` of the variance and were subsequently plotted against each other to identify which of the known variables these may represent (**Fig.** **\@ref(fig:PCAa7)**).
+
+```{r PCAa7, fig.cap="**Principal components 1 and 2 show gene expression in planktonic and semi-dry biofilms is specific to isolate and growth mode**"}
+`Growth mode` <- growth_a7
+Phenotype <- phenotype_a7
+Sample <- sampleLabels_a7
+pca_plot_1_a7<- ggplot(df_pca_results_a7,
+                       aes(x=PC1, y=PC2, label=Sample, colour=`Growth mode`, shape=Phenotype)) +
+  geom_point(size=8, alpha=0.6)+
+  scale_colour_manual(values=c("Planktonic"="#2596be", "Biofilm"="#eb4034"))+ ##add custom colour scale for values
+  xlab(paste0("PC1 (",pc_per_a7[1,1],"%",")"))+
+  ylab(paste0("PC2 (",pc_per_a7[2,1],"%",")"))+
+  labs(col="Growth mode &", shape="phenotype",
+       ) +
+  coord_fixed()+
+  theme_bw()+
+  theme(legend.position = "bottom", #adds legend to the bottom of the figure
+        legend.box = "vertical", #causes the legend to sit as 2 rows within a "box" element
+        legend.margin = margin(t=0,r=0,b=0,l=0),
+        legend.text =element_text(size=14),
+        legend.title=element_text(size=14),
+        plot.margin=margin(t=5,r=0,b=0,l=0),
+        axis.title = element_text(size=14),
+        axis.text = element_text(size=14))
+int_pc1_pc2 <- ggplotly(pca_plot_1_a7)
+int_pc1_pc2
+```
+
+<font size='2' color='#317EAC'> The first two PCs were plotted against each other, showing the percentage of the total variance accounted for by each PC. Samples are coded by colour for growth mode. </font>
+
+In this analysis, the first PC accounted for `r pc_per_a7$Variance[1]`% of the variance and was likely the growth mode, as planktonic samples clustered to the left and biofilm to the right of the plot. The identity of the second PC, which accounted for a further `r pc_per_a7$Variance[2]`% of the variance, was not apparent from examining the remaining variables.
+
+***
+
+
+# Differential Gene Expression analysis {#DGE-analysis .tabset .tabset-pills}
+
+Differentially-expressed genes between SDB and PK samples from both isolates were identified using the voom algorithm and associated statistical functions from the [Limma package](http://bioinf.wehi.edu.au/limma/). Using this pipeline, the mean-variance trend of the log-cpm data at the gene level is estimated using a non-normal distribution and used to predict the variance for each individual log-cpm value. Predicted variance is then used as a precision weight during linear-modelling of the data to estimate log~2~-adjusted fold changes (logFC) between groups of samples as specified in the study design. Finally, moderated t- and F- statistics, as well as the log-odds of differential expression between two groups are estimated using an empirical Bayes shrinkage method. 
+
+## Combined analysis {#DGEa1}
+### Determining relative expression levels {#limmaa1}
+
+The results of the limma-voom analysis pipeline for all `r nrow(norm_filt_DGEList_a1)` genes in the combined-isolate analysis is given in **Table** <font color='#2FA4E7'>**6.11** </font>. Differential expression was calculated in SDB samples relative to PK samples, such that a positive logFC represents upregulation in SDBs, and a negative logFC downregulation in SDBs (or upregulation in PK cells). This table can be searched to find the results of all expressed genes within the combined-isolate dataset.
+
+```{r DGEa1}
+design_a1 <- model.matrix(~0 + group_a1)
+colnames(design_a1) <- levels(group_a1)
+
+v_DGEList_filt_norm_a1 <- voom(norm_filt_DGEList_a1, design_a1, plot = FALSE)
+
+fit_a1 <- lmFit(v_DGEList_filt_norm_a1, design_a1)
+
+contrast_matrix_a1 <- makeContrasts(phenotype = SDB - PK,
+                                 levels=design_a1)
+
+fits_a1 <- contrasts.fit(fit_a1, contrast_matrix_a1)
+
+eb_fit_a1 <- eBayes(fits_a1)
+
+top_hits_a1 <- topTable(eb_fit_a1, adjust ="BH", coef=1, number=5500, sort.by="logFC")
+top_hits_df_a1 <- top_hits_a1%>% as_tibble(rownames = "ID")
+top_hits_df_a1 <- merge(x=Tx_map, all.x=FALSE, y=top_hits_df_a1, all.y=TRUE, by='ID')
+top_hits_df_a1 <- top_hits_df_a1 %>% dplyr::rename('Gene'='ID_Name')
+
+datatable(top_hits_df_a1[,2:8],
+          extensions = c('KeyTable', "FixedHeader"),
+          caption= htmltools::tags$caption(style='caption-side top; text-align: left; color: grey',
+                                           htmltools::tags$span("Table 6.11"),
+                                           htmltools::tags$span("Outputs of the limma differential gene expression analysis pipeline",
+                                                                style='font-weight: bold')),
+          colnames=c("Gene","Log<sub>2</sub> fold change","Average expression","t","P-value","Adjusted p-value","B"),
+          escape = FALSE,
+          options= list(pageLength=10, searchHighlight=TRUE, keys=TRUE)
+          ) %>% formatSignif(columns = c("logFC", "AveExpr","t","P.Value","adj.P.Val","B"), digits = 3)
+```
+
+The outputs of the limma analysis pipeline are as follows:
+
++ _Log~2~ fold change_: reports the log~2~-adjusted fold change (logFC) between groups as specified by the contrast matrix; here, the specified contrast was SDB - PK, therefore positive values represent genes more highly expressed in the SDB group, and negative values those more highly expressed in the PK group.
+
++ _Average expression_ is the average log~2~-CPM for the gene across all samples in the experiment. 
+
++ _t_ gives the moderated t-statistic, which is the ratio of the logFC to the standard error.
+
++ The _p-value_ is the associated p-value, whereas the _adjusted p-value_ is the false discovery rate determined by the Benjamini-Hochberg method. 
+
++ Finally, _B_ describes the log-odds that the gene is truly differentially expressed. For example: B9J08_001548 returns a B of `r round(top_hits_df_a1$B[1473],2)`, so the odds that this transcript is differentially expressed between phenotypes is _e_^`r round(top_hits_df_a1$B[1473],2)`^ or `r format(round(exp(top_hits_df_a1$B[1473]),0), scientific=FALSE)` to 1.
+
+
+***
+
+### Selection of DEGs {#resultsa1}
+
+The results of the limma analysis pipeline for all count data are illustrated in the volcano plot in **Fig.** **\@ref(fig:vplota1)**. The logFC in count data for each individual gene was plotted against the adjusted P-value derived from linear modelling; dashed lines represent the cut-offs for DE, specifically logFC between phenotypes was $\ge$ 1.5 in either direction with an adjusted P-value $\le$ 0.01. The red circles represent genes which were upregulated in SDBs, and blue those which were upregulated in planktonic cells (i.e downregulated in SDBs). Genes coloured in black did not meet either or both criteria for DEG designation.
+
+``` {r diffgenesa1}
+results_a1 <- decideTests(eb_fit_a1, method="global", adjust.method="BH", p.value=0.01, lfc=1.5)
+
+diff_genes_a1 <- v_DGEList_filt_norm_a1$E[results_a1[,1] !=0,]
+colnames(diff_genes_a1) <- colnames_a1
+
+my_diff_genes_a1 <- diff_genes_a1 %>% as_tibble(rownames = "ID")%>% 
+  mutate(SDB_AVG = (SDB01 + SDB02 + SDB03 + SDB04 + SDB05 + SDB06)/6,
+         PK_AVG = (PK01 + PK02 + PK03 + PK04 + PK05 + PK06)/6,
+         Log2FC = (SDB_AVG - PK_AVG)) %>% 
+  mutate_if(is.numeric, round, 2)
+my_diff_genes_a1 <- my_diff_genes_a1[,c(1,14:16)] %>% as_tibble()
+my_diff_genes_a1 <- merge(x=Tx_map, y=my_diff_genes_a1, by= 'ID', all.x=FALSE, all.y=TRUE)
+
+the_diff_genes_a1 <- my_diff_genes_a1
+the_diff_genes_a1$Up <-ifelse(the_diff_genes_a1$Log2FC >=1, 1, 0)
+the_diff_genes_a1$Down <- ifelse(the_diff_genes_a1$Log2FC <=-1, -1, 0)
+the_diff_genes_a1 <- the_diff_genes_a1[, c(1:2,6:7)] %>% as_tibble()
+a1_Up <- the_diff_genes_a1[the_diff_genes_a1$Up==1,-4] %>% as_tibble()
+colnames(a1_Up) <-c("ID","ID_Name", "Up")
+a1_Down <- the_diff_genes_a1[the_diff_genes_a1$Down==-1,-3] %>% as_tibble()
+colnames(a1_Down) <- c("ID","ID_Name", "Down")
+```
+
+````{r vplota1, fig.cap= "**Fold changes in gene expression between _Candida auris_ semi-dry biofilm cells and planktonic cells**"}
+volcano_a1 <- top_hits_df_a1 %>% 
+  mutate(Colour=case_when(c(logFC >=1.5 & adj.P.Val<0.01) ~ "red", 
+                          c(logFC<=-1.5 & adj.P.Val<0.01) ~ "blue"))
+volcano_a1$Colour <- if_else(is.na(volcano_a1$Colour), "black", volcano_a1$Colour)
+
+vplot_a1 <- ggplot(volcano_a1, aes(y=-log10(adj.P.Val), x=logFC, label=Gene))+
+  geom_hline(yintercept=2, linetype=2)+ #add dashed line (type2) to show cut-off of p-values
+  geom_vline(xintercept=-1.5, linetype=2)+ #add dashed line to show cut-off of down-regulated genes
+  geom_vline(xintercept=1.5, linetype=2)+
+  annotate("text", x=7.4, y=2.4, label=nrow(a1_Up), fontface=2, size=4, colour="#eb4034")+ 
+  annotate("text", x=-7.4, y=2.4, label=nrow(a1_Down), fontface=2, size=4, colour="#2596be")+
+  geom_point(aes(colour=Colour),size=1.5, alpha= 0.6) +
+  scale_colour_manual(values = c("blue"="#2596be",
+                                 "red"="#eb4034",
+                                 "black"="black"))+
+  scale_y_continuous(limits=c(0,8.25),breaks=seq(0,8, by=1))+
+  scale_x_continuous(limits=c(-8.5,8.5), breaks=seq(-8,8, by=2))+
+  mdthemes::md_theme_bw()+
+  labs(x="Log<sub>2</sub>-fold change",
+       y="-Log<sub>10</sub>-q value")+
+  theme(plot.margin = margin(t=5,r=5,b=5,l=5),
+        legend.position = "none")
+
+int_vplot_a1 <- ggplotly(vplot_a1) %>%
+  layout(xaxis= list(title= "Fold change in expression (log<sub>2</sub>-corrected)"),
+         yaxis= list(title= "Adjusted p-value (-log<sub>10</sub>-corrected)"))
+int_vplot_a1
+````
+
+<font size='2' color='#317EAC'> Volcano plot depicting the log2-fold change (logFC) in expression against q-values for significance, for all genes in the combined data from two _C. auris_ isolates. Dashed lines indicate the cut-offs for determining differential expression, specifically logFC ≥1.5 in either direction (vertical) and q <0.01 (horizontal). Differential gene expression was examined between semi-dry biofilm (SDB) cells and planktonic (PK) cells such that positive logFC values denote upregulation in the SDB group relative to the PK group (red) and negative logFC, downregulation (blue) </font>
+
+Applying the logFC and  cutoffs identified `r nrow(a1_Up)` genes which were upregulated in semi-dry biofilm cells relative to planktonic, and `r nrow(a1_Down)` genes which were downregulated, as shown in **Fig.** **\@ref(fig:vplota1)**. The remainder of genes, represented as black circles in the volcano plot did not meet either or both of the criteria of $\ge$ 1.5-logFC in either direction, or adjusted p-value $\le$ 0.01.
+
+An interactive table with the average expression for each growth mode, the log-fold change, and the FDR-adjusted p-value of all `r nrow(my_diff_genes_a1)` DEGs, is shown in **Table** <font color='#2FA4E7'>**6.12** </font>.
+
+``` {r DEGs_a1}
+my_diff_genes_a1 <- merge(x=my_diff_genes_a1, y=top_hits_df_a1, by='ID', all.x=TRUE, all.y=FALSE)
+my_diff_genes_a1 <- my_diff_genes_a1%>%
+  dplyr::select('Gene','SDB_AVG','PK_AVG','logFC','adj.P.Val')%>%
+  mutate_if(is.numeric, round, 4)
+
+datatable(my_diff_genes_a1,
+          extensions = c('KeyTable', "FixedHeader"),
+          caption = htmltools::tags$caption(style = 'caption-side: top; text-align: left; color: grey',
+                                            htmltools::tags$span("Table 6.12:"),
+                                            htmltools::tags$span(c("DEGs in semi-dry biofilms of ",htmltools::em("Candida auris"),
+                                                                    " relative to planktonic cells"),
+                                                                 style="font-weight:bold")),
+          colnames = c("Gene", "Semi-dry biofilms", "Planktonic cells",
+                       "Log<sub>2</sub> fold change", "Adjusted p-value"),
+          escape = FALSE,
+          options = list(keys = TRUE, searchHighlight = TRUE, pageLength = 5,
+                         lengthMenu = c("5","10", "25", "50", "100")))
+```
+
+***
+
+## NCPF8973 {#DGEa4}
+### Determining relative expression levels {#limmaa4}
+
+Differentially-expressed genes between SDB and PK samples from NCPF8973 were identified using the same pipeline as the combined isolate analysis, as explained above (**Table** <font color='#2FA4E7'>**6.21**</font>). As before, logFC were calculated by comparing the SDB samples to the PK samples. A positive logFC therefore indicates upregulation in SDBs of NCPF8973, and vice versa for negative logFC values. This table can be searched to find the results of all expressed genes within the NCPF8973 dataset.
+
+```{r DGEa4}
+design_a4 <- model.matrix(~0 + group_a4)
+colnames(design_a4) <- levels(group_a4)
+
+v_DGEList_filt_norm_a4 <- voom(norm_filt_DGEList_a4, design_a4, plot = FALSE)
+
+fit_a4 <- lmFit(v_DGEList_filt_norm_a4, design_a4)
+
+contrast_matrix_a4 <- makeContrasts(phenotype = SDB - PK,
+                                 levels=design_a4)
+
+fits_a4 <- contrasts.fit(fit_a4, contrast_matrix_a4)
+
+eb_fit_a4 <- eBayes(fits_a4)
+
+top_hits_a4 <- topTable(eb_fit_a4, adjust ="BH", coef=1, number=5500, sort.by="logFC")
+top_hits_df_a4 <- top_hits_a4%>% as_tibble(rownames = "ID")
+top_hits_df_a4 <- merge(x=Tx_map, all.x=FALSE, y=top_hits_df_a4, all.y=TRUE, by='ID')
+top_hits_df_a4 <- top_hits_df_a4 %>% dplyr::rename('Gene'='ID_Name')
+
+datatable(top_hits_df_a4[,2:8],
+          extensions = c('KeyTable', "FixedHeader"),
+          caption= htmltools::tags$caption(style='caption-side top; text-align: left; color: grey',
+                                           htmltools::tags$span("Table 6.21"),
+                                           htmltools::tags$span("Outputs of the limma differential gene expression analysis pipeline for NCPF8973 samples",
+                                                                style='font-weight: bold')),
+          colnames=c("Gene","Log<sub>2</sub> fold change","Average expression","t","P-value","Adjusted p-value","B"),
+          escape = FALSE,
+          options= list(pageLength=10, searchHighlight=TRUE, keys=TRUE)
+          ) %>% formatSignif(columns = c("logFC", "AveExpr","t","P.Value","adj.P.Val","B"), digits = 3)
+```
+
+***
+
+### Selection of DEGs {#resultsa4}
+
+The results of the limma analysis pipeline for samples from NCPF8973 are illustrated in the volcano plot in **Fig.** **\@ref(fig:vplota4)**. Differential gene expression was determined using the same cut-offs as previously.
+
+``` {r diffgenesa4}
+results_a4 <- decideTests(eb_fit_a4, method="global", adjust.method="BH", p.value=0.01, lfc=1.5)
+
+diff_genes_a4 <- v_DGEList_filt_norm_a4$E[results_a4[,1] !=0,]
+colnames(diff_genes_a4) <- colnames_a4
+
+my_diff_genes_a4 <- diff_genes_a4 %>% as_tibble(rownames = "ID")%>% 
+  mutate(SDB_AVG = (SDB01 + SDB02 + SDB03)/3,
+         PK_AVG = (PK01 + PK02 + PK03)/3,
+         Log2FC = (SDB_AVG - PK_AVG)) %>% 
+  mutate_if(is.numeric, round, 2)
+my_diff_genes_a4 <- my_diff_genes_a4[,c(1,8:10)] %>% as_tibble()
+my_diff_genes_a4 <- merge(x=Tx_map, y=my_diff_genes_a4, by= 'ID', all.x=FALSE, all.y=TRUE)
+
+the_diff_genes_a4 <- my_diff_genes_a4
+the_diff_genes_a4$Up <-ifelse(the_diff_genes_a4$Log2FC >=1, 1, 0)
+the_diff_genes_a4$Down <- ifelse(the_diff_genes_a4$Log2FC <=-1, -1, 0)
+the_diff_genes_a4 <- the_diff_genes_a4[, c(1:2,6:7)] %>% as_tibble()
+a4_Up <- the_diff_genes_a4[the_diff_genes_a4$Up==1,-4] %>% as_tibble()
+colnames(a4_Up) <-c("ID","ID_Name", "Up")
+a4_Down <- the_diff_genes_a4[the_diff_genes_a4$Down==-1,-3] %>% as_tibble()
+colnames(a4_Down) <- c("ID","ID_Name", "Down")
+```
+
+````{r vplota4, fig.cap= "**Fold changes in gene expression between semi-dry biofilm cells and planktonic cells of NCPF8973**"}
+volcano_a4 <- top_hits_df_a4 %>% 
+  mutate(Colour=case_when(c(logFC >=1.5 & adj.P.Val<0.01) ~ "red", 
+                          c(logFC<=-1.5 & adj.P.Val<0.01) ~ "blue"))
+volcano_a4$Colour <- if_else(is.na(volcano_a4$Colour), "black", volcano_a4$Colour)
+
+vplot_a4 <- ggplot(volcano_a4, aes(y=-log10(adj.P.Val), x=logFC, label=Gene))+
+  geom_hline(yintercept=2, linetype=2)+ #add dashed line (type2) to show cut-off of p-values
+  geom_vline(xintercept=-1.5, linetype=2)+ #add dashed line to show cut-off of down-regulated genes
+  geom_vline(xintercept=1.5, linetype=2)+
+  annotate("text", x=7.4, y=2.4, label=nrow(a4_Up), fontface=2, size=4, colour="#eb4034")+ 
+  annotate("text", x=-7.0, y=2.4, label=nrow(a4_Down), fontface=2, size=4, colour="#2596be")+
+  geom_point(aes(colour=Colour),size=1.5, alpha= 0.6) +
+  scale_colour_manual(values = c("blue"="#2596be",
+                                 "red"="#eb4034",
+                                 "black"="black"))+
+  scale_y_continuous(limits=c(0,8.25),breaks=seq(0,8, by=1))+
+  scale_x_continuous(limits=c(-8.5,8.5), breaks=seq(-8,8, by=2))+
+  mdthemes::md_theme_bw()+
+  labs(x="Log<sub>2</sub>-fold change",
+       y="-Log<sub>10</sub>-q value")+
+  theme(plot.margin = margin(t=5,r=5,b=5,l=5),
+        legend.position = "none")
+
+int_vplot_a4 <- ggplotly(vplot_a4) %>%
+  layout(xaxis= list(title= "Fold change in expression (log<sub>2</sub>-corrected)"),
+         yaxis= list(title= "Adjusted p-value (-log<sub>10</sub>-corrected)"))
+int_vplot_a4
+````
+
+<font size='2' color='#317EAC'> Volcano plot depicting the log2-fold change (logFC) in expression against q-values for significance, for all genes expressed in samples of NCPF8973. Dashed lines indicate the cut-offs for determining differential expression, specifically logFC ≥1.5 in either direction (vertical) and q <0.01 (horizontal). Differential gene expression was examined between semi-dry biofilm (SDB) cells and planktonic (PK) cells such that positive logFC values denote upregulation in the SDB group relative to the PK group (red) and negative logFC, downregulation (blue) </font>
+
+Applying the logFC and  cutoffs identified `r nrow(a4_Up)` genes which were upregulated in semi-dry biofilm cells relative to planktonic, and `r nrow(a4_Down)` genes which were downregulated, as shown in **Fig.** **\@ref(fig:vplota4)**. The remainder of genes, represented as black circles in the volcano plot did not meet either or both of the criteria of $\ge$ 1.5-logFC in either direction, or adjusted p-value $\le$ 0.01.
+
+An interactive table with the average expression for each growth mode, the log-fold change, and the FDR-adjusted p-value of all `r nrow(my_diff_genes_a4)` DEGs, is shown in **Table** <font color='#2FA4E7'> **6.22** </font>.
+
+``` {r DEGs_a4}
+my_diff_genes_a4 <- merge(x=my_diff_genes_a4, y=top_hits_df_a4, by='ID', all.x=TRUE, all.y=FALSE)
+my_diff_genes_a4 <- my_diff_genes_a4%>%
+  dplyr::select('Gene','SDB_AVG','PK_AVG','logFC','adj.P.Val')%>%
+  mutate_if(is.numeric, round, 4)
+
+datatable(my_diff_genes_a4,
+              extensions = c('KeyTable', "FixedHeader"),
+              caption = htmltools::tags$caption(style = 'caption-side: top; text-align: left; color:grey',
+                                                htmltools::tags$span("Table 6.22:"),
+                                                htmltools::tags$span("DEGs in semi-dry biofilms of NCPF8973, relative to planktonic cells"),
+                                                                     style="font-weight:bold"),
+              colnames = c("Gene", "Semi-dry biofilms", "Planktonic cells",
+                           "Log<sub>2</sub> fold change", "Adjusted p-value"),
+              escape = FALSE, 
+              options = list(keys = TRUE, searchHighlight = TRUE, pageLength = 5, 
+                             lengthMenu = c("5","10", "25", "50", "100")))
+```
+
+***
+
+## NCPF8978 {#DGEa7}
+### Determining relative expression levels {#limmaa7}
+
+Data from isolate NCPF8978 samples were also analysed using the limma-voom pipeline, and the outputs can be examined in **Table** <font color='#2FA4E7'>**6.31** </font>. Expression in SDB samples was compared to the PK samples for all genes, and positive FC values represent upregulation in the SDB group. This table can be searched to find the results of all expressed genes within the NCPF8978 dataset.
+
+```{r DGEa7}
+design_a7 <- model.matrix(~0 + group_a7)
+colnames(design_a7) <- levels(group_a7)
+
+v_DGEList_filt_norm_a7 <- voom(norm_filt_DGEList_a7, design_a7, plot = FALSE)
+
+fit_a7 <- lmFit(v_DGEList_filt_norm_a7, design_a7)
+
+contrast_matrix_a7 <- makeContrasts(phenotype = SDB - PK,
+                                 levels=design_a7)
+
+fits_a7 <- contrasts.fit(fit_a7, contrast_matrix_a7)
+
+eb_fit_a7 <- eBayes(fits_a7)
+
+top_hits_a7 <- topTable(eb_fit_a7, adjust ="BH", coef=1, number=5500, sort.by="logFC")
+top_hits_df_a7 <- top_hits_a7%>% as_tibble(rownames = "ID")
+top_hits_df_a7 <- merge(x=Tx_map, all.x=FALSE, y=top_hits_df_a7, all.y=TRUE, by='ID')
+top_hits_df_a7 <- top_hits_df_a7 %>% dplyr::rename('Gene'='ID_Name')
+
+datatable(top_hits_df_a7[,2:8],
+          extensions = c('KeyTable', "FixedHeader"),
+          caption= htmltools::tags$caption(style='caption-side top; text-align: left; color: grey',
+                                           htmltools::tags$span("Table 6.31"),
+                                           htmltools::tags$span("Outputs of the limma differential gene expression analysis pipeline for NCPF8978 samples",
+                                                                style='font-weight: bold')),
+          colnames=c("Gene","Log<sub>2</sub> fold change","Average expression","t","P-value","Adjusted p-value","B"),
+          escape = FALSE,
+          options= list(pageLength=10, searchHighlight=TRUE, keys=TRUE)
+          ) %>% formatSignif(columns = c("logFC", "AveExpr","t","P.Value","adj.P.Val","B"), digits = 3)
+```
+
+***
+
+### Selection of DEGs {#resultsa7}
+
+The results of the limma analysis pipeline for samples from NCPF8973 are illustrated in the volcano plot in **Fig.** **\@ref(fig:vplota7)**. Differential gene expression was determined using the same cut-offs as previously.
+
+``` {r diffgenesa7}
+results_a7 <- decideTests(eb_fit_a7, method="global", adjust.method="BH", p.value=0.01, lfc=1.5)
+
+diff_genes_a7 <- v_DGEList_filt_norm_a7$E[results_a7[,1] !=0,]
+colnames(diff_genes_a7) <- colnames_a7
+
+my_diff_genes_a7 <- diff_genes_a7 %>% as_tibble(rownames = "ID")%>% 
+  mutate(SDB_AVG = (SDB04 + SDB05 + SDB06)/3,
+         PK_AVG = (PK04 + PK05 + PK06)/3,
+         Log2FC = (SDB_AVG - PK_AVG)) %>% 
+  mutate_if(is.numeric, round, 2)
+my_diff_genes_a7 <- my_diff_genes_a7[,c(1,8:10)] %>% as_tibble()
+my_diff_genes_a7 <- merge(x=Tx_map, y=my_diff_genes_a7, by= 'ID', all.x=FALSE, all.y=TRUE)
+
+the_diff_genes_a7 <- my_diff_genes_a7
+the_diff_genes_a7$Up <-ifelse(the_diff_genes_a7$Log2FC >=1, 1, 0)
+the_diff_genes_a7$Down <- ifelse(the_diff_genes_a7$Log2FC <=-1, -1, 0)
+the_diff_genes_a7 <- the_diff_genes_a7[, c(1:2,6:7)] %>% as_tibble()
+a7_Up <- the_diff_genes_a7[the_diff_genes_a7$Up==1,-4] %>% as_tibble()
+colnames(a7_Up) <-c("ID","ID_Name", "Up")
+a7_Down <- the_diff_genes_a7[the_diff_genes_a7$Down==-1,-3] %>% as_tibble()
+colnames(a7_Down) <- c("ID","ID_Name", "Down")
+```
+
+````{r vplota7, fig.cap= "**Fold changes in gene expression between semi-dry biofilm cells and planktonic cells of NCPF8973**"}
+volcano_a7 <- top_hits_df_a7 %>% 
+  mutate(Colour=case_when(c(logFC >=1.5 & adj.P.Val<0.01) ~ "red", 
+                          c(logFC<=-1.5 & adj.P.Val<0.01) ~ "blue"))
+volcano_a7$Colour <- if_else(is.na(volcano_a7$Colour), "black", volcano_a7$Colour)
+
+vplot_a7 <- ggplot(volcano_a7, aes(y=-log10(adj.P.Val), x=logFC, label=Gene))+
+  geom_hline(yintercept=2, linetype=2)+ #add dashed line (type2) to show cut-off of p-values
+  geom_vline(xintercept=-1.5, linetype=2)+ #add dashed line to show cut-off of down-regulated genes
+  geom_vline(xintercept=1.5, linetype=2)+
+  annotate("text", x=7.4, y=2.4, label=nrow(a7_Up), fontface=2, size=4, colour="#eb4034")+ 
+  annotate("text", x=-7.4, y=2.4, label=nrow(a7_Down), fontface=2, size=4, colour="#2596be")+
+  geom_point(aes(colour=Colour),size=1.5, alpha= 0.6) +
+  scale_colour_manual(values = c("blue"="#2596be",
+                                 "red"="#eb4034",
+                                 "black"="black"))+
+  scale_y_continuous(limits=c(0,8.25),breaks=seq(0,8, by=1))+
+  scale_x_continuous(limits=c(-8.5,8.5), breaks=seq(-8,8, by=2))+
+  mdthemes::md_theme_bw()+
+  labs(x="Log<sub>2</sub>-fold change",
+       y="-Log<sub>10</sub>-q value")+
+  theme(plot.margin = margin(t=5,r=5,b=5,l=5),
+        legend.position = "none")
+
+int_vplot_a7 <- ggplotly(vplot_a7) %>%
+  layout(xaxis= list(title= "Fold change in expression (log<sub>2</sub>-corrected)"),
+         yaxis= list(title= "Adjusted p-value (-log<sub>10</sub>-corrected)"))
+int_vplot_a7
+````
+
+<font size='2' color='#317EAC'> Volcano plot depicting the log2-fold change (logFC) in expression against q-values for significance, for all genes expressed in samples of NCPF8978. Dashed lines indicate the cut-offs for determining differential expression, specifically logFC ≥1.5 in either direction (vertical) and q <0.01 (horizontal). Differential gene expression was examined between semi-dry biofilm (SDB) cells and planktonic (PK) cells such that positive logFC values denote upregulation in the SDB group relative to the PK group (red) and negative logFC, downregulation (blue) </font>
+
+Applying the logFC and  cutoffs identified `r nrow(a7_Up)` genes which were upregulated in semi-dry biofilm cells relative to planktonic, and `r nrow(a7_Down)` genes which were downregulated, as shown in **Fig.** **\@ref(fig:vplota7)**. The remainder of genes, represented as black circles in the volcano plot did not meet either or both of the criteria of $\ge$ 1.5-logFC in either direction, or adjusted p-value $\le$ 0.01.
+
+An interactive table with the average expression for each growth mode, the log-fold change, and the FDR-adjusted p-value of all `r nrow(my_diff_genes_a7)` DEGs, is shown in **Table** <font color='#2FA4E7'> **6.32** </font>.
+
+``` {r DEGs_a7}
+my_diff_genes_a7 <- merge(x=my_diff_genes_a7, y=top_hits_df_a7, by='ID', all.x=TRUE, all.y=FALSE)
+my_diff_genes_a7 <- my_diff_genes_a7%>%
+  dplyr::select('Gene','SDB_AVG','PK_AVG','logFC','adj.P.Val')%>%
+  mutate_if(is.numeric, round, 4)
+
+datatable(my_diff_genes_a7,
+              extensions = c('KeyTable', "FixedHeader"),
+              caption = htmltools::tags$caption(style = 'caption-side: top; text-align: left; color:grey',
+                                                htmltools::tags$span("Table 6.32:"),
+                                                htmltools::tags$span("DEGs in semi-dry biofilms of NCPF8978, relative to planktonic cells",
+                                                                     style="font-weight:bold")
+                                                ),
+              colnames = c("Gene", "Semi-dry biofilms", "Planktonic cells",
+                           "Log<sub>2</sub> fold change", "Adjusted p-value"),
+              escape = FALSE, 
+              options = list(keys = TRUE, searchHighlight = TRUE, pageLength = 5, 
+                             lengthMenu = c("5","10", "25", "50", "100")))
+```
+
+# Gene Ontology {#GO-analysis .tabset .tabset-pills}
+
+Gene ontology (GO) over-representation analysis was performed on DEG sets containing either up- or down-regulated genes using the [clusterprofiler](10.18129/B9.bioc.clusterProfiler) package [(Wu et al. 2021)](https://doi.org/10.1016/j.xinn.2021.100141). A mapping of GO terms and GO names to each gene within the C. auris genome was created using a combination of GO files from CGD and the [GO Consortium](http://geneontology.org/docs/download-ontology/) [(Aleksander et al. 2023)](https://academic.oup.com/genetics/article/doi/10.1093/genetics/iyad031/7068118). Over-representation was determined using the hypergeometric probability distribution to assess the likelihood of GO terms occurring in the DEG set relative to the background set of all GO terms associated with C. auris genes, and the effect of multiple comparisons controlled using the FDR method (q < 0.05). Enriched GO terms were also visualised as concept networks to show relationships between DEGs and GO terms, and between GO terms based on common genes. 
+
+```{r GOmaps}
+GO_obo <- get_ontology(file="go.obo", propagate_relationships = "is_a",
+                               extract_tags = "everything",
+                               merge_equivalent_terms = TRUE)
+GO_names <- tibble(GO_obo$name)
+GO_terms <- tibble(GO_obo$id)
+GO_ontology <- tibble(GO_obo$namespace)
+GO_total <- tibble(cbind(GO_terms, GO_names, GO_ontology))
+colnames(GO_total) <- c("GO term", "Description", "Ontology")
+GO_total <- GO_total %>% dplyr::mutate(Category= case_when(Ontology=='biological_process' ~ 'BP',
+                                                           Ontology=='cellular_component' ~ 'CC',
+                                                           Ontology=='molecular_function' ~ 'MF'))
+GO_total <- rbind(GO_total,
+                  c('GO:0016021', 'integral component of membrane*','cellular_component','CC'))
+
+GO_cgd <- read_delim("gene_association.cgd.gz", skip=21, delim="\t", col_names=FALSE)
+GO_cgd <- GO_cgd[GO_cgd$X13=="taxon:498019",] %>% as_tibble()
+GO_cgd <- GO_cgd[,-c(16:17)]
+colnames(GO_cgd) <- c(" DB", "DB_Object_ID", "DB_Object_Symbol", "NOT", "GO term",
+                      "DB_Reference", "Evidence", "With (or) From", "Aspect",
+                      "DB_Object_Name", "DB_Object_Synonym", "DB_Object_Type", "taxon", "Date", 
+                      "Assigned_by")
+GO_cgd_cluster <- GO_cgd %>% dplyr::select(c(`GO term`,DB_Object_Synonym, Aspect)) %>% dplyr::rename("ID"="DB_Object_Synonym") 
+
+GO_c_auris <- merge(x=GO_cgd_cluster, y=GO_total, by="GO term", all.x=TRUE, all.y=FALSE)
+GO_c_auris <- GO_c_auris %>% as_tibble %>% dplyr::arrange(ID)
+GO_c_auris <- GO_c_auris %>% dplyr::distinct(.keep_all = TRUE)
+```
+
+``` {r Edit GO terms for duplicates, include=FALSE}
+GO_c_auris$Description <- ifelse(GO_c_auris$`GO term`== "GO:0016021", "integral component of membrane*", GO_c_auris$Description)
+GO_c_auris$Description <- ifelse(GO_c_auris$`GO term`== "GO:0016021", "integral component of membrane*", GO_c_auris$Description)
+GO_c_auris$Description <- ifelse(GO_c_auris$`GO term`== "GO:0034629", "cellular protein-containing complex localization*", GO_c_auris$Description)
+GO_c_auris$Description <- ifelse(GO_c_auris$`GO term`== "GO:0006336", "DNA replication-independent chromatin assembly*", GO_c_auris$Description)
+GO_c_auris$Description <- ifelse(GO_c_auris$`GO term`== "GO:0006348", "chromatin silencing at telomere*", GO_c_auris$Description)
+GO_c_auris$Description <- ifelse(GO_c_auris$`GO term`== "GO:0043044", "chromatin remodeling*", GO_c_auris$Description)
+GO_c_auris$Description <- ifelse(GO_c_auris$`GO term`== "GO:0034622", "protein-containing complex assembly*", GO_c_auris$Description)
+GO_c_auris$Description <- ifelse(GO_c_auris$`GO term`== "GO:0034613", "protein localization*", GO_c_auris$Description)
+GO_c_auris$Description <- ifelse(GO_c_auris$`GO term`== "GO:1990415", "peroxisomal importomer complex*", GO_c_auris$Description)
+GO_c_auris$Description <- ifelse(GO_c_auris$`GO term`== "GO:0042493", "response to xenobiotic stimulus*", GO_c_auris$Description)
+GO_c_auris$Description <- ifelse(GO_c_auris$`GO term`== "GO:0035327", "euchromatin*", GO_c_auris$Description)
+GO_c_auris$Description <- ifelse(GO_c_auris$`GO term`== "GO:0071048", "nuclear mRNA surveillance*", GO_c_auris$Description)
+GO_c_auris$Description <- ifelse(GO_c_auris$`GO term`== "GO:0031617", "kinetochore*", GO_c_auris$Description)
+GO_c_auris$Description <- ifelse(GO_c_auris$`GO term`== "GO:0005887", "plasma membrane*", GO_c_auris$Description)
+GO_c_auris$Description <- ifelse(GO_c_auris$`GO term`== "GO:0044267", "protein metabolic process*", GO_c_auris$Description)
+GO_c_auris$Description <- ifelse(GO_c_auris$`GO term`== "GO:0044257", "protein catabolic process*", GO_c_auris$Description)
+GO_c_auris$Description <- ifelse(GO_c_auris$`GO term`== "GO:0043624", "protein-containing complex disassembly*", GO_c_auris$Description)
+GO_c_auris$Description <- ifelse(GO_c_auris$`GO term`== "GO:0006464", "protein modification process*", GO_c_auris$Description)
+GO_c_auris$Description <- ifelse(GO_c_auris$`GO term`== "GO:0070615", "ATP-dependent chromatin remodeler activity*", GO_c_auris$Description)
+GO_c_auris$Description <- ifelse(GO_c_auris$`GO term`== "GO:0000818", "MIS12/MIND type complex*", GO_c_auris$Description)
+GO_c_auris$Description <- ifelse(GO_c_auris$`GO term`== "GO:0061641", "CENP-A containing chromatin assembly*", GO_c_auris$Description)
+GO_c_auris$Description <- ifelse(GO_c_auris$`GO term`== "GO:0006975", "signal transduction in response to DNA damage*", GO_c_auris$Description)
+GO_c_auris$Description <- ifelse(GO_c_auris$`GO term`== "GO:0006333", "chromatin organization*", GO_c_auris$Description)
+GO_c_auris$Description <- ifelse(GO_c_auris$`GO term`== "GO:0034990", "mitotic cohesin complex*", GO_c_auris$Description)
+GO_c_auris$Description <- ifelse(GO_c_auris$`GO term`== "GO:0101011", "inositol-1-diphosphate-2,3,4,5,6-pentakisphosphate diphosphatase activity*", GO_c_auris$Description)
+GO_c_auris$Description <- ifelse(GO_c_auris$`GO term`== "GO:0101012", "inositol-1,5-bisdiphosphate-2,3,4,6-tetrakisphosphate 1-diphosphatase activity*", GO_c_auris$Description)
+GO_c_auris$Description <- ifelse(GO_c_auris$`GO term`== "GO:0031497", "chromatin organization*", GO_c_auris$Description)
+GO_c_auris$Description <- ifelse(GO_c_auris$`GO term`== "GO:0048096", "transcription initiation-coupled chromatin remodeling*", GO_c_auris$Description)
+GO_c_auris$Description <- ifelse(GO_c_auris$`GO term`== "GO:0035690", "cellular response to xenobiotic stimulus*", GO_c_auris$Description)
+GO_c_auris$Description <- ifelse(GO_c_auris$`GO term`== "GO:0031454", "heterochromatin boundary formation*", GO_c_auris$Description)
+GO_c_auris$Description <- ifelse(GO_c_auris$`GO term`== "GO:0071033", "nuclear mRNA surveillance*", GO_c_auris$Description)
+GO_c_auris$Description <- ifelse(GO_c_auris$`GO term`== "GO:1903364", "positive regulation of protein catabolic process*", GO_c_auris$Description)
+GO_c_auris$Description <- ifelse(GO_c_auris$`GO term`== "GO:0006342", "heterochromatin formation*", GO_c_auris$Description)
+GO_c_auris$Description <- ifelse(GO_c_auris$`GO term`== "GO:0015181", "L-arginine transmembrane transporter activity*", GO_c_auris$Description)
+GO_c_auris$Description <- ifelse(GO_c_auris$`GO term`== "GO:0015696", "ammonium transmembrane transport*", GO_c_auris$Description)
+GO_c_auris$Description <- ifelse(GO_c_auris$`GO term`== "GO:0052928", "CTP:tRNA cytidylyltransferase activity*", GO_c_auris$Description)
+GO_c_auris$Description <- ifelse(GO_c_auris$`GO term`== "GO:1903211", "mitotic recombination-dependent replication fork processing*", GO_c_auris$Description)
+GO_c_auris$Description <- ifelse(GO_c_auris$`GO term`== "GO:0015809", "L-arginine transmembrane transport*", GO_c_auris$Description)
+GO_c_auris$Description <- ifelse(GO_c_auris$`GO term`== "GO:0034724", "chromatin organization*", GO_c_auris$Description)
+GO_c_auris$Description <- ifelse(GO_c_auris$`GO term`== "GO:1903827", "regulation of protein localization*", GO_c_auris$Description)
+GO_c_auris$Description <- ifelse(GO_c_auris$`GO term`== "GO:0032445", "fructose import across plasma membrane*", GO_c_auris$Description)
+GO_c_auris$Description <- ifelse(GO_c_auris$`GO term`== "GO:1903400", "L-arginine transmembrane transport*", GO_c_auris$Description)
+GO_c_auris$Description <- ifelse(GO_c_auris$`GO term`== "GO:0004647", "L-phosphoserine phosphatase activity*", GO_c_auris$Description)
+GO_c_auris$Description <- ifelse(GO_c_auris$`GO term`== "GO:0004367", "glycerol-3-phosphate dehydrogenase [NAD(P)+] activity*", GO_c_auris$Description)
+GO_c_auris$Description <- ifelse(GO_c_auris$`GO term`== "GO:0043458", "glycolytic fermentation to ethanol*", GO_c_auris$Description)
+GO_c_auris$Description <- ifelse(GO_c_auris$`GO term`== "GO:0071049", "nuclear mRNA surveillance*", GO_c_auris$Description)
+GO_c_auris$Description <- ifelse(GO_c_auris$`GO term`== "GO:0015893", "xenobiotic transport*", GO_c_auris$Description)
+GO_c_auris$Description <- ifelse(GO_c_auris$`GO term`== "GO:0070140", "deSUMOylase activity*", GO_c_auris$Description)
+GO_c_auris$Description <- ifelse(GO_c_auris$`GO term`== "GO:0006323", "chromosome organization*", GO_c_auris$Description)
+```
+```{r Everything}
+everything <- merge(x=Tx_map, y=GO_c_auris, by="ID", all = TRUE)
+everything <- everything %>% dplyr::mutate(GO_category= case_when(Aspect=='P' ~ 'BP',
+                                                                  Aspect=='C' ~ 'CC',
+                                                                  Aspect=='F' ~ 'MF'))
+everything <- everything[,-c(4,6)]
+```
+
+## Combined data
+
+```{r GOprepa1}
+top_hits_df_a1 <- top_hits_df_a1 %>% dplyr::rename('ID_Name'='Gene')
+a1_1 <- top_hits_df_a1[top_hits_df_a1$logFC>=1.5,]
+a1_1 <- a1_1[a1_1$adj.P.Val<0.01,] %>% 
+  dplyr::mutate("result" = "Up") %>% 
+  as_tibble() %>%
+  dplyr::arrange(ID_Name)
+a1_2 <- top_hits_df_a1[top_hits_df_a1$logFC<=-1.5,]
+a1_2 <- a1_2[a1_2$adj.P.Val<0.01,] %>% 
+  dplyr::mutate("result" = "Down") %>% 
+  as_tibble() %>% 
+  dplyr::arrange(ID_Name)
+
+a1_Up_check <- merge(x=a1_Up, y=GO_c_auris, by="ID")
+a1_Up_check <-unique(a1_Up_check$ID)
+a1_Down_check <- merge(x=a1_Down, y=GO_c_auris, by="ID")
+a1_Down_check <-unique(a1_Down_check$ID) 
+```
+
+GO enrichment analysis was performed on combined data from both isolates. Only `r length(a1_Up_check)` and `r length(a1_Down_check)` genes within the up- and down-regulated sets of DEGs, respectively, were found to have GO term mappings. This reflects the lack of data available for the _C. auris_ genome, owing to its recent emergence.
+
+***
+
+### Upregulated in SDBs {#GO_up_all}
+
+GO enrichment analysis was performed on the set of upregulated DEGs to elucidate potential functions or pathways of genes that contribute to the formation and/or persistence of SDBs. The results of GO analysis are shown in **Table** <font color='#2FA4E7'> **7.11** </font>.
+
+```{r step 7A.2 - GO for upregulated genes }
+a1_Up_GO<- clusterProfiler::enricher(gene=a1_Up$ID_Name,  
+                           pvalueCutoff=0.05,
+                           pAdjustMethod="BH",
+                           universe = Tx_map$ID_Name,
+                           TERM2GENE=everything[,c(3,2)],
+                           TERM2NAME=everything[,c(3,4)])
+
+GO_res_up_a1 <- tibble(a1_Up_GO@result)
+colnames(GO_res_up_a1) <- c("GO term","Description","Gene Ratio","Background Ratio", "P-value",
+                                      "Adjusted P-value","Q-value","Genes","Count")
+GO_res_up_a1 <- tibble(merge(x=GO_res_up_a1, y=GO_total, by='GO term', all.x=TRUE, all.y=FALSE))
+GO_res_up_a1 <- GO_res_up_a1%>% dplyr::select("GO term","Description.x","Category","Count","Genes",
+                                                                  "Gene Ratio","Background Ratio", "P-value","Adjusted P-value","Q-value")%>%
+  dplyr::rename("Description"="Description.x")
+GO_res_up_a1$Genes <- str_replace_all(string= GO_res_up_a1$Genes, pattern="/", replacement = ", ")
+GO_res_up_a1 <- GO_res_up_a1 %>% 
+  mutate(Enriched=case_when(c(`P-value` <0.05 & `Q-value`<0.05) ~ "Yes",
+                            c(`P-value` <0.05 & `Q-value`>=0.05) ~ "No",
+                            c(`P-value`>=0.05 & `Q-value`>=0.05) ~ "No")) %>% 
+  dplyr::arrange(desc(Enriched), desc(Count))
+
+datatable(GO_res_up_a1,
+          extensions = c('KeyTable', "FixedHeader"),
+          caption = htmltools::tags$caption(style = 'caption-side: top; text-align: left; color:grey',
+                                            htmltools::tags$span("Table 7.11:"),
+                                            htmltools::tags$span("Gene Ontology results for upregulated DEGs",
+                                                                 style="font-weight:bold")
+                                            ),
+          escape = FALSE,
+          options = list(keys = TRUE, searchHighlight = TRUE, pageLength =5,
+                         lengthMenu = c(5,10,25,50,100),
+                         columnDefs = list(list(
+          targets = 5,render = JS(
+            "function(data, type, row, meta) {",
+            "return type === 'display' && data.length > 20 ?",
+            "'<span title=\"' + data + '\">' + data.substr(0, 20) + '...</span>' : data;",
+            "}")
+        )))) %>% formatSignif(columns = c("P-value","Adjusted P-value","Q-value"), digits = 3)
+```
+
+A total of `r nrow(GO_res_up_a1)` GO terms were associated with the upregulated gene set. Over-representation analysis identified that `r sum(GO_res_up_a1$Enriched=="Yes")` of these were enriched in this set (**Fig.** **\@ref(fig:GOUpa1)**). Nine terms were concerned with ribosomal structure or assembly, or related translational processes. The most highly over-represented molecular function was “structural constituent of ribosome” (GO:0003735), with `r GO_res_up_a1$Count[1]` associated genes. The remaining two terms were concerned with processes and functions of transmembrane transporters, with a total of `r GO_res_up_a1$Count[4]` associated genes between the two terms.
+
+```{r GOUpa1, fig.cap= "**Enriched GO terms for upregulated genes from semi-dry biofilms**"}
+GO_res_up_a1 <- GO_res_up_a1[GO_res_up_a1$`P-value`<0.05,]
+GO_res_up_a1 <- GO_res_up_a1[GO_res_up_a1$`Q-value`<0.05,]##yields 11 GO IDs
+GO_res_up_a1 <- GO_res_up_a1 %>% dplyr::mutate(GO= paste0(Description," (",`GO term`,")"))
+GO_up_a1 <- ggplot(GO_res_up_a1, aes(y=GO))+
+  geom_col(aes(x=Count, fill=-log10(`Adjusted P-value`))) + 
+  scale_y_discrete(limits=rev) +
+  scale_x_continuous(breaks = seq(0,40,5))+
+  scale_fill_viridis_c(option="B", begin=0.9, end=0.15)+
+  facet_grid(rows = vars(GO_res_up_a1$Category), 
+             scales = "free_y", 
+             space = "free_y") +
+  theme(legend.position="none",
+        axis.title = element_blank())
+ggplotly(plot=GO_up_a1)%>%
+  layout(yaxis= list(title= "GO term"),
+         xaxis= list(title= "Number of genes"))
+```
+
+<font size='2' color='#317EAC'> Gene Ontology (GO) enrichment analysis by clusterprofiler identified a total of nine terms that were over-represented amongst genes upregulated in SDBs in the combined analysis of both C. auris isolates. The number of upregulated genes were plotted against their associated GO term and colour coded for the q-value.</font>
+
+Visualising the intersections of GO terms and genes as a network revealed a high degree of overlap between these nine categories, with 37 genes associated with at least two terms (**Fig.** **\@ref(fig:CnetUpa1)**).
+
+```{r Step7A.7.1 concept network- UPreg GO}
+GO_net_up_a1 <- cnetplot(a1_Up_GO, 
+                         showCategory=c("cytosolic large ribosomal subunit",
+                                        "structural constituent of ribosome",
+                                        "translation",
+                                        "cytoplasmic translation",
+                                        "ribosome",
+                                        "cytosolic small ribosomal subunit",
+                                        "translational elongation",
+                                        "ribosomal large subunit assembly",
+                                        "transmembrane transport",
+                                        "transmembrane transporter activity",
+                                        "rRNA export from nucleus"),
+                         node_label="gene", 
+                         layout="kk", 
+                         cex.params= list(category_node=0.5, 
+                                          gene_label=0.5),  
+                         color.params=list(edge=TRUE, 
+                                           category="black", 
+                                           gene="grey"))+
+  theme(legend.position="none")
+GO_net_up_a1
+```
+```{r CnetUpa1, fig.cap='**Concept network of upregulated GO terms**', out.width='35%'}
+knitr::include_graphics('01_GO_concept_up_a1.png')#{width='35%', height='35%'}
+```
+<font size='2' color='#317EAC'> Black coloured nodes and associated edge colours represent each GO term, whilst individual genes are depicted as grey nodes.</font>
+
+***
+
+### Downregulated in SDBs {#GO_down}
+
+GO enrichment analysis was performed on the set of downregulated DEGs to determine gene categories or pathways which are less utilised in SDBs relative to planktonic cells. The results of GO analysis are shown in **Table** <font color='#2FA4E7'> **7.12** </font>.
+
+```{r GODownrega1}
+a1_Down_cluster_2<- clusterProfiler::enricher(gene=a1_Down$ID_Name,  
+                           pvalueCutoff=0.05,
+                           pAdjustMethod="BH",
+                           universe = Tx_map$ID_Name,
+                           TERM2GENE=everything[,c(3,2)],
+                           TERM2NAME=everything[,c(3,4)])
+
+GO_res_down_a1_cluster_2 <- tibble(a1_Down_cluster_2@result)
+colnames(GO_res_down_a1_cluster_2) <- c("GO term","Description","Gene Ratio","Background Ratio", "P-value",
+                                      "Adjusted P-value","Q-value","Genes","Count")
+GO_res_down_a1_cluster_2 <- tibble(merge(x=GO_res_down_a1_cluster_2, y=GO_total, by='GO term', all.x=TRUE, all.y=FALSE))
+GO_res_down_a1_cluster_2 <- GO_res_down_a1_cluster_2%>% dplyr::select("GO term","Description.x","Category","Count","Genes",
+                                                                  "Gene Ratio","Background Ratio", "P-value","Adjusted P-value","Q-value")%>%
+  dplyr::rename("Description"="Description.x")
+GO_res_down_a1_cluster_2$Genes <- str_replace_all(string= GO_res_down_a1_cluster_2$Genes, pattern="/", replacement = ", ")
+GO_res_down_a1_cluster_2 <- GO_res_down_a1_cluster_2 %>% 
+  mutate(Enriched=case_when(c(`P-value` <0.05 & `Q-value`<0.05) ~ "Yes",
+                            c(`P-value` <0.05 & `Q-value`>=0.05) ~ "No",
+                            c(`P-value`>=0.05 & `Q-value`>=0.05) ~ "No")) %>% 
+  dplyr::arrange(desc(Enriched), desc(Count))
+
+int_GO_down <- datatable(GO_res_down_a1_cluster_2, 
+                       extensions = c('KeyTable', "FixedHeader"), 
+                       caption = htmltools::tags$caption(style = 'caption-side: top; text-align: left;color:grey',
+                                                htmltools::tags$span("Table 7.12:"),
+                                                htmltools::tags$span("Gene Ontology results for downregulated DEGs",
+                                                                     style="font-weight:bold")
+                                                ),
+                       escape = FALSE, #necessary to achieve the subscript above using html coding
+                       options = list(keys = TRUE, searchHighlight = TRUE, pageLength =5,
+                                      lengthMenu = c(5,10,25,50,100),
+                                      columnDefs = list(list(targets = 5,
+                                                             render = JS("function(data, type, row, meta) {",
+                                                                         "return type === 'display' && data.length > 20 ?",
+                                                                         "'<span title=\"' + data + '\">' + data.substr(0, 20) + '...</span>' : data;",
+                                                                         "}")
+                                                             )
+                                                        )
+                                      )
+                       ) %>% formatSignif(columns = c("P-value","Adjusted P-value","Q-value"), digits = 3)
+int_GO_down
+```
+
+A total of `r nrow(GO_res_down_a1_cluster_2)` GO terms were associated with the downregulated gene set (**Table** <font color='#2FA4E7'> **7.12**</font>). Over-representation analysis of the downregulated genes in SDBs identified a total of `r sum(GO_res_down_a1_cluster_2$Enriched=="Yes")` enriched GO terms (**Fig.** **\@ref(fig:GODowna1)**). The number of intersections between genes and GO terms was much lower overall than those in the upregulated gene set, typically only three to seven genes per term, and a maximum of twelve genes associated with "cellular bud neck" (GO:0005935).
+
+```{r GODowna1, fig.cap= "**Enriched GO terms for downregulated genes from semi-dry biofilms**"}
+GO_res_down_a1_cluster_2 <- GO_res_down_a1_cluster_2[GO_res_down_a1_cluster_2$`P-value`<0.05,]
+GO_res_down_a1_cluster_2 <- GO_res_down_a1_cluster_2[GO_res_down_a1_cluster_2$`Q-value`<0.05,]##yields 11 GO IDs
+GO_res_down_a1_cluster_2 <- GO_res_down_a1_cluster_2 %>% dplyr::mutate(GO= paste0(Description," (",`GO term`,")"))
+GO_down_a1_cluster <- ggplot(GO_res_down_a1_cluster_2, aes(y=GO))+
+  geom_col(aes(x=Count, fill=-log10(`Adjusted P-value`))) + 
+  scale_y_discrete(limits=rev) +
+  scale_x_continuous(breaks = seq(0,12.5,5))+
+  scale_fill_viridis_c(option="B", begin=0.9, end=0.15)+
+  facet_grid(rows = vars(GO_res_down_a1_cluster_2$Category), 
+             scales = "free_y", 
+             space = "free_y") +
+   theme(legend.position="none",
+        axis.title = element_blank())
+int_GO_down<- ggplotly(plot=GO_down_a1_cluster)%>%
+  layout(yaxis= list(title= "GO term"),
+         xaxis= list(title= "Number of genes"))
+int_GO_down  
+```
+
+<font size='2' color='#317EAC'>The number of downregulated genes were plotted against their associated GO term and colour coded for the q-value. </font>
+
+The concept network of genes and GO terms for the downregulated set shows two clusters of GO terms and associated genes, as well as one individual GO term where no genes overlap with the others (**Fig.** **\@ref(fig:CnetDowna1)**).
+
+```{r Step7A.7.2a1}
+no1 <- GO_res_down_a1_cluster_2[1,5] %>% dplyr::mutate(Genes=strsplit(Genes,","))%>%
+  unnest(Genes) %>% as_vector()
+no2 <- GO_res_down_a1_cluster_2[2,5] %>% dplyr::mutate(Genes=strsplit(Genes,","))%>%
+  unnest(Genes)%>% as_vector()
+no3 <- GO_res_down_a1_cluster_2[3,5] %>% dplyr::mutate(Genes=strsplit(Genes,","))%>%
+  unnest(Genes)%>% as_vector()
+no4 <- GO_res_down_a1_cluster_2[4,5] %>% dplyr::mutate(Genes=strsplit(Genes,","))%>%
+  unnest(Genes)%>% as_vector()
+no5 <- GO_res_down_a1_cluster_2[5,5] %>% dplyr::mutate(Genes=strsplit(Genes,","))%>%
+  unnest(Genes)%>% as_vector()
+no6 <- GO_res_down_a1_cluster_2[6,5] %>% dplyr::mutate(Genes=strsplit(Genes,","))%>%
+  unnest(Genes)%>% as_vector()
+no7 <- GO_res_down_a1_cluster_2[7,5] %>% dplyr::mutate(Genes=strsplit(Genes,","))%>%
+  unnest(Genes)%>% as_vector()
+no8 <- GO_res_down_a1_cluster_2[8,5] %>% dplyr::mutate(Genes=strsplit(Genes,","))%>%
+  unnest(Genes)%>% as_vector()
+no9 <- GO_res_down_a1_cluster_2[9,5] %>% dplyr::mutate(Genes=strsplit(Genes,","))%>%
+  unnest(Genes)%>% as_vector()
+no10 <- GO_res_down_a1_cluster_2[10,5] %>% dplyr::mutate(Genes=strsplit(Genes,","))%>%
+  unnest(Genes)%>% as_vector()
+no11 <- GO_res_down_a1_cluster_2[11,5] %>% dplyr::mutate(Genes=strsplit(Genes,","))%>%
+  unnest(Genes)%>% as_vector()
+no12 <- GO_res_down_a1_cluster_2[12,5] %>% dplyr::mutate(Genes=strsplit(Genes,","))%>%
+  unnest(Genes)%>% as_vector()
+no13 <- GO_res_down_a1_cluster_2[13,5] %>% dplyr::mutate(Genes=strsplit(Genes,","))%>%
+  unnest(Genes)%>% as_vector()
+no14 <- GO_res_down_a1_cluster_2[14,5] %>% dplyr::mutate(Genes=strsplit(Genes,","))%>%
+  unnest(Genes)%>% as_vector()
+no15 <- GO_res_down_a1_cluster_2[15,5] %>% dplyr::mutate(Genes=strsplit(Genes,","))%>%
+  unnest(Genes)%>% as_vector()
+no16 <- GO_res_down_a1_cluster_2[16,5] %>% dplyr::mutate(Genes=strsplit(Genes,","))%>%
+  unnest(Genes)%>% as_vector()
+no17 <- GO_res_down_a1_cluster_2[17,5] %>% dplyr::mutate(Genes=strsplit(Genes,","))%>%
+  unnest(Genes)%>% as_vector()
+no18 <- GO_res_down_a1_cluster_2[18,5] %>% dplyr::mutate(Genes=strsplit(Genes,","))%>%
+  unnest(Genes)%>% as_vector()
+no19 <- GO_res_down_a1_cluster_2[19,5] %>% dplyr::mutate(Genes=strsplit(Genes,","))%>%
+  unnest(Genes)%>% as_vector()
+no20 <- GO_res_down_a1_cluster_2[20,5] %>% dplyr::mutate(Genes=strsplit(Genes,","))%>%
+  unnest(Genes)%>% as_vector()
+no21 <- GO_res_down_a1_cluster_2[21,5] %>% dplyr::mutate(Genes=strsplit(Genes,","))%>%
+  unnest(Genes)%>% as_vector()
+no22 <- GO_res_down_a1_cluster_2[22,5] %>% dplyr::mutate(Genes=strsplit(Genes,","))%>%
+  unnest(Genes)%>% as_vector()
+no23 <- GO_res_down_a1_cluster_2[23,5] %>% dplyr::mutate(Genes=strsplit(Genes,","))%>%
+  unnest(Genes)%>% as_vector()
+x <- list("cellular bud neck"=no1,
+      "mitotic sister chromatid cohesion"=no2,
+      "nucleosome assembly"=no3,
+      "replication fork protection complex"=no4,
+      "fungal-type cell wall organization"=no5,
+      "protein heterodimerization activity"=no6,
+      "translational elongation"=no7,
+      "ribosomal large subunit assembly"=no8,
+      "DNA damage response"=no9,
+      "fungal-type cell wall"=no10,
+      "axial cellular bud site selection"=no11,
+      "carbon utilization"=no12,
+      "mating-type region heterochromatin"=no13,
+      "nuclear replication fork"=no14,
+      "mitotic spindle pole body"=no15,
+      "condensed nuclear chromosome"=no16,
+      "septum digestion after cytokinesis"=no17,
+      "aspartic-type endopeptidase activity"=no18,
+      "cytoplasmic microtubule"=no19,
+      "mitotic chromosome condensation"=no20,
+      "nuclear migration along microtubule"=no21,
+      "establishment of mitotic sister chromatid cohesion"=no22,
+      "protein localization to kinetochore"=no23)
+
+GO_net_down_a1_v2 <- cnetplot(x, 
+                           showCategory=23,
+                           node_label="gene", 
+                           layout="kk", 
+                           cex.params= list(category_node=0.5, 
+                                            gene_label=0.5),  
+                           color.params=list(edge=TRUE, 
+                                             category="black", 
+                                             gene="grey"))+
+  theme(legend.position='none')
+GO_net_down_a1_v2
+```
+```{r CnetDowna1, fig.cap='**Concept network of downregulated GO terms**', out.width='90%'} 
+knitr::include_graphics('01_GO_concept_down_a1.png')#{width='75%', height='75%'}
+```
+
+<font size='2' color='#317EAC'> Black coloured nodes and associated edge colours represent each GO term, whilst individual genes are depicted as grey nodes.</font>
+
+***
+
+## NCPF8973
+
+```{r GOprepa4}
+top_hits_df_a4 <- top_hits_df_a4 %>% dplyr::rename('ID_Name'='Gene')
+a4_1 <- top_hits_df_a4[top_hits_df_a4$logFC>=1.5,]
+a4_1 <- a4_1[a4_1$adj.P.Val<0.01,] %>% 
+  dplyr::mutate("result" = "Up") %>% 
+  as_tibble() %>%
+  dplyr::arrange(ID_Name)
+a4_2 <- top_hits_df_a4[top_hits_df_a4$logFC<=-1.5,]
+a4_2 <- a4_2[a4_2$adj.P.Val<0.01,] %>% 
+  dplyr::mutate("result" = "Down") %>% 
+  as_tibble() %>% 
+  dplyr::arrange(ID_Name)
+
+a4_Up_check <- merge(x=a4_Up, y=GO_c_auris, by="ID")
+a4_Up_check <-unique(a4_Up_check$ID)
+a4_Down_check <- merge(x=a4_Down, y=GO_c_auris, by="ID")
+a4_Down_check <-unique(a4_Down_check$ID) 
+```
+
+GO enrichment analysis was performed on DEGs from NCPF8973. Only `r length(a4_Up_check)` and `r length(a4_Down_check)` genes within the up- and down-regulated sets of DEGs, respectively, were found to have GO term mappings. This reflects the lack of data available for the _C. auris_ genome, owing to its recent emergence.
+
+***
+
+### Upregulated in SDBs 
+
+GO enrichment analysis was performed on the set of upregulated DEGs to elucidate potential functions or pathways of genes that contribute to the formation and/or persistence of SDBs. The results of GO analysis are shown in **Table** <font color='#2FA4E7'> **7.21** </font>.
+
+```{r step 7A.2a4}
+a4_Up_GO<- clusterProfiler::enricher(gene=a4_Up$ID_Name,  
+                           pvalueCutoff=0.05,
+                           pAdjustMethod="BH",
+                           universe = Tx_map$ID_Name,
+                           TERM2GENE=everything[,c(3,2)],
+                           TERM2NAME=everything[,c(3,4)])
+
+GO_res_up_a4 <- tibble(a4_Up_GO@result)
+colnames(GO_res_up_a4) <- c("GO term","Description","Gene Ratio","Background Ratio", "P-value",
+                                      "Adjusted P-value","Q-value","Genes","Count")
+GO_res_up_a4 <- tibble(merge(x=GO_res_up_a4, y=GO_total, by='GO term', all.x=TRUE, all.y=FALSE))
+GO_res_up_a4 <- GO_res_up_a4%>% dplyr::select("GO term","Description.x","Category","Count","Genes",
+                                              "Gene Ratio","Background Ratio", "P-value","Adjusted P-value","Q-value")%>%
+  dplyr::rename("Description"="Description.x")
+GO_res_up_a4$Genes <- str_replace_all(string= GO_res_up_a4$Genes, pattern="/", replacement = ", ")
+GO_res_up_a4 <- GO_res_up_a4 %>% 
+  mutate(Enriched=case_when(c(`P-value` <0.05 & `Q-value`<0.05) ~ "Yes",
+                            c(`P-value` <0.05 & `Q-value`>=0.05) ~ "No",
+                            c(`P-value`>=0.05 & `Q-value`>=0.05) ~ "No")) %>% 
+  dplyr::arrange(desc(Enriched), desc(Count))
+
+datatable(GO_res_up_a4,
+          extensions = c('KeyTable', "FixedHeader"),
+          caption = htmltools::tags$caption(style = 'caption-side: top; text-align: left;color:grey',
+                                            htmltools::tags$span("Table 7.21:"),
+                                            htmltools::tags$span("Gene Ontology results for upregulated DEGs in NCPF8973",
+                                                                 style="font-weight:bold")
+                                            ),
+          escape = FALSE,
+          options = list(keys = TRUE, searchHighlight = TRUE, pageLength =5,
+                         lengthMenu = c(5,10,25,50,100),
+                         columnDefs = list(list(targets = 5,
+                                                render = JS("function(data, type, row, meta) {",
+                                                            "return type === 'display' && data.length > 20 ?",
+                                                            "'<span title=\"' + data + '\">' + data.substr(0, 20) + '...</span>' : data;",
+                                                            "}")
+                                                )
+                                           )
+                         )
+          ) %>% formatSignif(columns = c("P-value","Adjusted P-value","Q-value"), digits = 3)
+```
+
+A total of `r nrow(GO_res_up_a4)` GO terms were associated with the upregulated gene set (**Table** <font color='#2FA4E7'> **7.21** </font>). Over-representation analysis identified that `r sum(GO_res_up_a4$Enriched=="Yes")` of these were enriched in this set (**Fig.** **\@ref(fig:GOUpa4)**). Two terms were concerned with transmembrane transporters, one with the integrity of the cellular membrane, five with ribosomal structure or assembly, or related translational processes, and the remaining terms with metabolic processes. The most highly over-represented term was “transmembrane transport” (GO:0055085), with `r GO_res_up_a4$Count[1]` associated genes. 
+
+```{r GOUpa4, fig.cap= "**Enriched GO terms for upregulated genes from semi-dry biofilms of NCPF8973**"}
+GO_res_up_a4 <- GO_res_up_a4[GO_res_up_a4$`P-value`<0.05,]
+GO_res_up_a4 <- GO_res_up_a4[GO_res_up_a4$`Q-value`<0.05,]##yields 11 GO IDs
+GO_res_up_a4 <- GO_res_up_a4 %>% dplyr::mutate(GO= paste0(Description," (",`GO term`,")"))
+GO_up_a4 <- ggplot(GO_res_up_a4, aes(y=GO))+
+  geom_col(aes(x=Count, fill=-log10(`Adjusted P-value`))) + 
+  scale_y_discrete(limits=rev, labels=str_wrap(GO_res_up_a4$GO, width = 55)) +
+  scale_x_continuous(breaks = seq(0,40,5))+
+  scale_fill_viridis_c(option="B", begin=0.9, end=0.15)+
+  facet_grid(rows = vars(GO_res_up_a4$Category), 
+             scales = "free_y", 
+             space = "free_y") +
+  theme(legend.position="none",
+        axis.title = element_blank())
+ggplotly(plot=GO_up_a4)%>%
+  layout(yaxis= list(title= "GO term"),
+         xaxis= list(title= "Number of genes"))
+```
+
+<font size='2' color='#317EAC'> Gene Ontology (GO) enrichment analysis by clusterprofiler identified a total of eleven terms that were over-represented amongst genes upregulated in SDBs in the combined analysis of both C. auris isolates. The number of upregulated genes were plotted against their associated GO term and colour coded for the q-value.</font>
+
+Visualising the intersections of GO terms and genes as a network revealed a total of two clusters of at least three GO terms with common genes, and three individual GO terms without overlapping genes (**Fig.** **\@ref(fig:CnetUpa4)**). 
+
+```{r Step7A.7.1a4}
+GO_net_up_a4 <- cnetplot(a4_Up_GO, 
+                         showCategory=13,
+                         node_label="gene", 
+                         layout="kk", 
+                         cex.params= list(category_node=0.5, 
+                                          gene_label=0.5),  
+                         color.params=list(edge=TRUE, 
+                                           category="black", 
+                                           gene="grey"))+
+  theme(legend.position="none")
+GO_net_up_a4
+```
+```{r CnetUpa4, fig.cap='**Concept network of upregulated GO terms from SDBs of NCPF8973**', out.width='35%'}
+knitr::include_graphics('01_GO_concept_up_a4.png')#{width='35%', height='35%'}
+```
+<font size='2' color='#317EAC'> Black coloured nodes and associated edge colours represent each GO term, whilst individual genes are depicted as grey nodes.</font>
+
+***
+
+### Downregulated in SDBs
+
+GO enrichment analysis was performed on the set of downregulated DEGs from NCPF8973 to determine gene categories or pathways which are less utilised in SDBs relative to planktonic cells. The results of GO analysis are shown in **Table** <font color='#2FA4E7'> **7.22** </font>.
+
+```{r GODownrega4}
+a4_Down_cluster_2<- clusterProfiler::enricher(gene=a4_Down$ID_Name,  
+                           pvalueCutoff=0.05,
+                           pAdjustMethod="BH",
+                           universe = Tx_map$ID_Name,
+                           TERM2GENE=everything[,c(3,2)],
+                           TERM2NAME=everything[,c(3,4)])
+
+GO_res_down_a4_cluster_2 <- tibble(a4_Down_cluster_2@result)
+colnames(GO_res_down_a4_cluster_2) <- c("GO term","Description","Gene Ratio","Background Ratio", "P-value",
+                                      "Adjusted P-value","Q-value","Genes","Count")
+GO_res_down_a4_cluster_2 <- tibble(merge(x=GO_res_down_a4_cluster_2, y=GO_total, by='GO term', all.x=TRUE, all.y=FALSE))
+GO_res_down_a4_cluster_2 <- GO_res_down_a4_cluster_2%>% dplyr::select("GO term","Description.x","Category","Count","Genes",
+                                                                  "Gene Ratio","Background Ratio", "P-value","Adjusted P-value","Q-value")%>%
+  dplyr::rename("Description"="Description.x")
+GO_res_down_a4_cluster_2$Genes <- str_replace_all(string= GO_res_down_a4_cluster_2$Genes, pattern="/", replacement = ", ")
+GO_res_down_a4_cluster_2 <- GO_res_down_a4_cluster_2 %>% 
+  mutate(Enriched=case_when(c(`P-value` <0.05 & `Q-value`<0.05) ~ "Yes",
+                            c(`P-value` <0.05 & `Q-value`>=0.05) ~ "No",
+                            c(`P-value`>=0.05 & `Q-value`>=0.05) ~ "No")) %>% 
+  dplyr::arrange(desc(Enriched), desc(Count))
+
+datatable(GO_res_down_a4_cluster_2, 
+                       extensions = c('KeyTable', "FixedHeader"), 
+                       caption = htmltools::tags$caption(style = 'caption-side: top; text-align: left;color:grey',
+                                                htmltools::tags$span("Table 7.22:"),
+                                                htmltools::tags$span("Gene Ontology results for downregulated DEGs",
+                                                                     style="font-weight:bold")
+                                                ),
+                       escape = FALSE, #necessary to achieve the subscript above using html coding
+                       options = list(keys = TRUE, searchHighlight = TRUE, pageLength =5,
+                                      lengthMenu = c(5,10,25,50,100),
+                                      columnDefs = list(list(targets = 5,
+                                                render = JS("function(data, type, row, meta) {",
+                                                            "return type === 'display' && data.length > 20 ?",
+                                                            "'<span title=\"' + data + '\">' + data.substr(0, 20) + '...</span>' : data;",
+                                                            "}")
+                                                )
+                                           )
+                                      )
+          ) %>% formatSignif(columns = c("P-value","Adjusted P-value","Q-value"), digits = 3)
+
+```
+
+A total of `r nrow(GO_res_down_a4_cluster_2)` GO terms were associated with the downregulated gene set (**Table** <font color='#2FA4E7'> **7.22**</font>). Over-representation analysis of the downregulated genes in SDBs identified a total of `r sum(GO_res_down_a4_cluster_2$Enriched=="Yes")` enriched GO terms (**Fig.** **\@ref(fig:GODowna4)**). The number of intersections between genes and GO terms was much lower overall than those in the upregulated gene set, typically only three to seven genes per term, and a maximum of twelve genes associated with "cellular bud neck" (GO:0005935).
+
+```{r GODowna4, fig.cap= "**Enriched GO terms for downregulated genes from semi-dry biofilms**", out.width="50%"}
+GO_res_down_a4_cluster_2 <- GO_res_down_a4_cluster_2[GO_res_down_a4_cluster_2$`P-value`<0.05,]
+GO_res_down_a4_cluster_2 <- GO_res_down_a4_cluster_2[GO_res_down_a4_cluster_2$`Q-value`<0.05,]##yields 11 GO IDs
+GO_res_down_a4_cluster_2 <- GO_res_down_a4_cluster_2 %>% dplyr::mutate(GO= paste0(Description," (",`GO term`,")"))
+GO_down_a4_cluster <- ggplot(GO_res_down_a4_cluster_2, aes(y=GO))+
+  geom_col(aes(x=Count, fill=-log10(`Adjusted P-value`))) + 
+  scale_y_discrete(limits=rev) +
+  scale_x_continuous(breaks = seq(0,12.5,5))+
+  scale_fill_viridis_c(option="B", begin=0.9, end=0.15)+
+  facet_grid(rows = vars(GO_res_down_a4_cluster_2$Category), 
+             scales = "free_y", 
+             space = "free_y") +
+   theme(legend.position="none",
+        axis.title = element_blank())
+ggplotly(plot=GO_down_a4_cluster)%>%
+  layout(yaxis= list(title= "GO term"),
+         xaxis= list(title= "Number of genes"))
+```
+
+<font size='2' color='#317EAC'>The number of downregulated genes were plotted against their associated GO term and colour coded for the q-value. </font>
+
+The concept network of genes and GO terms for the downregulated set shows a single cluster of all `r sum(GO_res_down_a4_cluster_2$Enriched=="Yes")` GO terms and associated genes (**Fig.** **\@ref(fig:CnetDowna4)**). 
+
+```{r Step7A.7.2a4}
+no1 <- GO_res_down_a4_cluster_2[1,5] %>% dplyr::mutate(Genes=strsplit(Genes,","))%>%
+  unnest(Genes) %>% as_vector()
+no2 <- GO_res_down_a4_cluster_2[2,5] %>% dplyr::mutate(Genes=strsplit(Genes,","))%>%
+  unnest(Genes)%>% as_vector()
+no3 <- GO_res_down_a4_cluster_2[3,5] %>% dplyr::mutate(Genes=strsplit(Genes,","))%>%
+  unnest(Genes)%>% as_vector()
+no4 <- GO_res_down_a4_cluster_2[4,5] %>% dplyr::mutate(Genes=strsplit(Genes,","))%>%
+  unnest(Genes)%>% as_vector()
+no5 <- GO_res_down_a4_cluster_2[5,5] %>% dplyr::mutate(Genes=strsplit(Genes,","))%>%
+  unnest(Genes)%>% as_vector()
+no6 <- GO_res_down_a4_cluster_2[6,5] %>% dplyr::mutate(Genes=strsplit(Genes,","))%>%
+  unnest(Genes)%>% as_vector()
+no7 <- GO_res_down_a4_cluster_2[7,5] %>% dplyr::mutate(Genes=strsplit(Genes,","))%>%
+  unnest(Genes)%>% as_vector()
+no8 <- GO_res_down_a4_cluster_2[8,5] %>% dplyr::mutate(Genes=strsplit(Genes,","))%>%
+  unnest(Genes)%>% as_vector()
+no9 <- GO_res_down_a4_cluster_2[9,5] %>% dplyr::mutate(Genes=strsplit(Genes,","))%>%
+  unnest(Genes)%>% as_vector()
+no10 <- GO_res_down_a4_cluster_2[10,5] %>% dplyr::mutate(Genes=strsplit(Genes,","))%>%
+  unnest(Genes)%>% as_vector()
+no11 <- GO_res_down_a4_cluster_2[11,5] %>% dplyr::mutate(Genes=strsplit(Genes,","))%>%
+  unnest(Genes)%>% as_vector()
+no12 <- GO_res_down_a4_cluster_2[12,5] %>% dplyr::mutate(Genes=strsplit(Genes,","))%>%
+  unnest(Genes)%>% as_vector()
+no13 <- GO_res_down_a4_cluster_2[13,5] %>% dplyr::mutate(Genes=strsplit(Genes,","))%>%
+  unnest(Genes)%>% as_vector()
+no14 <- GO_res_down_a4_cluster_2[14,5] %>% dplyr::mutate(Genes=strsplit(Genes,","))%>%
+  unnest(Genes)%>% as_vector()
+no15 <- GO_res_down_a4_cluster_2[15,5] %>% dplyr::mutate(Genes=strsplit(Genes,","))%>%
+  unnest(Genes)%>% as_vector()
+no16 <- GO_res_down_a4_cluster_2[16,5] %>% dplyr::mutate(Genes=strsplit(Genes,","))%>%
+  unnest(Genes)%>% as_vector()
+no17 <- GO_res_down_a4_cluster_2[17,5] %>% dplyr::mutate(Genes=strsplit(Genes,","))%>%
+  unnest(Genes)%>% as_vector()
+no18 <- GO_res_down_a4_cluster_2[18,5] %>% dplyr::mutate(Genes=strsplit(Genes,","))%>%
+  unnest(Genes)%>% as_vector()
+no19 <- GO_res_down_a4_cluster_2[19,5] %>% dplyr::mutate(Genes=strsplit(Genes,","))%>%
+  unnest(Genes)%>% as_vector()
+no20 <- GO_res_down_a4_cluster_2[20,5] %>% dplyr::mutate(Genes=strsplit(Genes,","))%>%
+  unnest(Genes)%>% as_vector()
+no21 <- GO_res_down_a4_cluster_2[21,5] %>% dplyr::mutate(Genes=strsplit(Genes,","))%>%
+  unnest(Genes)%>% as_vector()
+no22 <- GO_res_down_a4_cluster_2[22,5] %>% dplyr::mutate(Genes=strsplit(Genes,","))%>%
+  unnest(Genes)%>% as_vector()
+no23 <- GO_res_down_a4_cluster_2[23,5] %>% dplyr::mutate(Genes=strsplit(Genes,","))%>%
+  unnest(Genes)%>% as_vector()
+no24 <- GO_res_down_a4_cluster_2[24,5] %>% dplyr::mutate(Genes=strsplit(Genes,","))%>%
+  unnest(Genes)%>% as_vector()
+no25 <- GO_res_down_a4_cluster_2[25,5] %>% dplyr::mutate(Genes=strsplit(Genes,","))%>%
+  unnest(Genes)%>% as_vector()
+x2 <- list("cellular bud neck"=no1,
+      "mitotic sister chromatid cohesion"=no2,
+      "fungal-type cell wall"=no3,
+      "peroxisome"=no4,
+      "carbohydrate metabolic process"=no5,
+      "DNA replication"=no6,
+      "double-strand break repair"=no7,
+      "fungal-type cell wall organization"=no8,
+      "cellular bud neck contractile ring"=no9,
+      "double-stranded DNA binding"=no10,
+      "DNA-directed DNA polymerase activity"=no11,
+      "spindle pole body"=no12,
+      "cytoplasmic microtubule"=no13,
+      "nuclear migration along microtubule"=no14,
+      "replication fork protection complex"=no15,
+      "site of double-strand break"=no16,
+      "nuclear replication fork"=no17,
+      "mitotic spindle pole body"=no18,
+      "septum digestion after cytokinesisd"=no19,
+      "mitotic chromosome condensation"=no20,
+      "establishment of mitotic sister chromatid cohesion"=no21,
+      "mitotic spindle elongation"=no22,
+      "meiotic mismatch repair"=no23,
+      "condensed nuclear chromosome"=no24,
+      "mating-type region heterochromatin"=no25)
+
+GO_net_down_a4_v2 <- cnetplot(x2, 
+                           showCategory=25,
+                           node_label="gene", 
+                           layout="kk", 
+                           cex.params= list(category_node=0.5, 
+                                            gene_label=0.5),  
+                           color.params=list(edge=TRUE, 
+                                             category="black", 
+                                             gene="grey"))+
+  theme(legend.position='none')
+GO_net_down_a4_v2
+```
+```{r CnetDowna4, fig.cap='**Concept network of downregulated GO terms**', out.width='90%'} 
+knitr::include_graphics('01_GO_concept_down_a4.png')#{width='75%', height='75%'}
+```
+
+<font size='2' color='#317EAC'> Black coloured nodes and associated edge colours represent each GO term, whilst individual genes are depicted as grey nodes.</font>
+
+***
+
+## NCPF8978
+
+```{r GOprepa7}
+top_hits_df_a7 <- top_hits_df_a7 %>% dplyr::rename('ID_Name'='Gene')
+a7_1 <- top_hits_df_a7[top_hits_df_a7$logFC>=1.5,]
+a7_1 <- a7_1[a7_1$adj.P.Val<0.01,] %>% 
+  dplyr::mutate("result" = "Up") %>% 
+  as_tibble() %>%
+  dplyr::arrange(ID_Name)
+a7_2 <- top_hits_df_a7[top_hits_df_a7$logFC<=-1.5,]
+a7_2 <- a7_2[a7_2$adj.P.Val<0.01,] %>% 
+  dplyr::mutate("result" = "Down") %>% 
+  as_tibble() %>% 
+  dplyr::arrange(ID_Name)
+
+a7_Up_check <- merge(x=a7_Up, y=GO_c_auris, by="ID")
+a7_Up_check <-unique(a7_Up_check$ID)
+a7_Down_check <- merge(x=a7_Down, y=GO_c_auris, by="ID")
+a7_Down_check <-unique(a7_Down_check$ID) 
+```
+
+GO enrichment analysis was performed on DEGs from NCPF8978. Only `r length(a7_Up_check)` and `r length(a7_Down_check)` genes within the up- and down-regulated sets of DEGs, respectively, were found to have GO term mappings. This reflects the lack of data available for the _C. auris_ genome, owing to its recent emergence.
+
+***
+
+### Upregulated in SDBs 
+
+GO enrichment analysis was performed on the set of upregulated DEGs to elucidate potential functions or pathways of genes that contribute to the formation and/or persistence of SDBs. The results of GO analysis are shown in **Table** <font color='#2FA4E7'> **7.31** </font>.
+
+```{r step 7A.2a7}
+a7_Up_GO<- clusterProfiler::enricher(gene=a7_Up$ID_Name,  
+                           pvalueCutoff=0.05,
+                           pAdjustMethod="BH",
+                           universe = Tx_map$ID_Name,
+                           TERM2GENE=everything[,c(3,2)],
+                           TERM2NAME=everything[,c(3,4)])
+
+GO_res_up_a7 <- tibble(a7_Up_GO@result)
+colnames(GO_res_up_a7) <- c("GO term","Description","Gene Ratio","Background Ratio", "P-value",
+                                      "Adjusted P-value","Q-value","Genes","Count")
+GO_res_up_a7 <- tibble(merge(x=GO_res_up_a7, y=GO_total, by='GO term', all.x=TRUE, all.y=FALSE))
+GO_res_up_a7 <- GO_res_up_a7%>% dplyr::select("GO term","Description.x","Category","Count","Genes",
+                                              "Gene Ratio","Background Ratio", "P-value","Adjusted P-value","Q-value")%>%
+  dplyr::rename("Description"="Description.x")
+GO_res_up_a7$Genes <- str_replace_all(string= GO_res_up_a7$Genes, pattern="/", replacement = ", ")
+GO_res_up_a7 <- GO_res_up_a7 %>% 
+  mutate(Enriched=case_when(c(`P-value` <0.05 & `Q-value`<0.05) ~ "Yes",
+                            c(`P-value` <0.05 & `Q-value`>=0.05) ~ "No",
+                            c(`P-value`>=0.05 & `Q-value`>=0.05) ~ "No")) %>% 
+  dplyr::arrange(desc(Enriched), desc(Count))
+GO_res_up_a7$Description <- GO_res_up_a7$Description %>% str_replace(pattern=" \\s*\\([^\\)]+\\)", replacement="")
+GO_res_up_a7$Description[5] <- "endonucleolytic cleavage in ITS1"
+GO_res_up_a7$Description[15] <-"endonucleolytic cleavage to generate mature 5' SSU-rRNA"
+
+datatable(GO_res_up_a7,
+          extensions = c('KeyTable', "FixedHeader"),
+          caption = htmltools::tags$caption(style = 'caption-side: top; text-align: left;color:grey',
+                                            htmltools::tags$span("Table 7.31:"),
+                                            htmltools::tags$span("Gene Ontology results for upregulated DEGs in NCPF8978",
+                                                                 style="font-weight:bold")
+                                            ),
+          escape = FALSE,
+          options = list(keys = TRUE, searchHighlight = TRUE, pageLength =5,
+                         lengthMenu = c(5,10,25,50,100),
+                         columnDefs = list(list(targets = 5,
+                                                render = JS("function(data, type, row, meta) {",
+                                                            "return type === 'display' && data.length > 20 ?",
+                                                            "'<span title=\"' + data + '\">' + data.substr(0, 20) + '...</span>' : data;",
+                                                            "}")
+                                                )
+                                           )
+                         )
+          ) %>% formatSignif(columns = c("P-value","Adjusted P-value","Q-value"), digits = 3)
+```
+
+A total of `r nrow(GO_res_up_a7)` GO terms were associated with the upregulated gene set (**Table** <font color='#2FA4E7'> **7.31** </font>). Over-representation analysis identified that `r sum(GO_res_up_a7$Enriched=="Yes")` of these were enriched in this set (**Fig.** **\@ref(fig:GOUpa7)**). One term was concerned with transmembrane transporters, another with 'catalytic activity', and the remaining terms with ribosomal structure or assembly, or related translational processes. The most highly over-represented term was “nucleolus” (GO:0005730), with `r GO_res_up_a7$Count[1]` associated genes. 
+
+```{r GOUpa7, fig.cap= "**Enriched GO terms for upregulated genes from semi-dry biofilms of NCPF8978**", out.height="150%"}
+GO_res_up_a7 <- GO_res_up_a7[GO_res_up_a7$`P-value`<0.05,]
+GO_res_up_a7 <- GO_res_up_a7[GO_res_up_a7$`Q-value`<0.05,]##yields 11 GO IDs
+GO_res_up_a7 <- GO_res_up_a7 %>% dplyr::mutate(GO= paste0(Description," (",`GO term`,")"))
+
+GO_up_a7 <- ggplot(GO_res_up_a7, aes(y=GO))+
+  geom_col(aes(x=Count, fill=-log10(`Adjusted P-value`))) + 
+  scale_y_discrete(limits=rev, #labels=str_wrap(GO_res_up_a7$GO, width = 85)
+                   ) +
+  scale_x_continuous(breaks = seq(0,40,5))+
+  scale_fill_viridis_c(option="B", begin=0.9, end=0.15)+
+  facet_grid(rows = vars(GO_res_up_a7$Category), 
+             scales = "free_y", 
+             space = "free_y") +
+  theme(legend.position="none",
+        axis.title = element_blank())
+ggplotly(plot=GO_up_a7)%>%
+  layout(yaxis= list(title= "GO term"),
+         xaxis= list(title= "Number of genes"))
+```
+
+<font size='2' color='#317EAC'> Gene Ontology (GO) enrichment analysis by clusterprofiler identified a total of eleven terms that were over-represented amongst genes upregulated in SDBs in the combined analysis of both C. auris isolates. The number of upregulated genes were plotted against their associated GO term and colour coded for the q-value.</font>
+
+Visualising the intersections of GO terms and genes as a network revealed one individual GO term ("transmembrane transport" [GO:0055085]) with unique genes, with the remaining GO terms forming one large cluster of inter-related genes (**Fig.** **\@ref(fig:CnetUpa7)**). 
+
+```{r Step7A.7.1a7}
+no1 <- GO_res_up_a7 [1,5] %>% dplyr::mutate(Genes=strsplit(Genes,","))%>%
+  unnest(Genes) %>% as_vector()
+no2 <- GO_res_up_a7 [2,5] %>% dplyr::mutate(Genes=strsplit(Genes,","))%>%
+  unnest(Genes)%>% as_vector()
+no3 <- GO_res_up_a7 [3,5] %>% dplyr::mutate(Genes=strsplit(Genes,","))%>%
+  unnest(Genes)%>% as_vector()
+no4 <- GO_res_up_a7 [4,5] %>% dplyr::mutate(Genes=strsplit(Genes,","))%>%
+  unnest(Genes)%>% as_vector()
+no5 <- GO_res_up_a7 [5,5] %>% dplyr::mutate(Genes=strsplit(Genes,","))%>%
+  unnest(Genes)%>% as_vector()
+no6 <- GO_res_up_a7 [6,5] %>% dplyr::mutate(Genes=strsplit(Genes,","))%>%
+  unnest(Genes)%>% as_vector()
+no7 <- GO_res_up_a7 [7,5] %>% dplyr::mutate(Genes=strsplit(Genes,","))%>%
+  unnest(Genes)%>% as_vector()
+no8 <- GO_res_up_a7 [8,5] %>% dplyr::mutate(Genes=strsplit(Genes,","))%>%
+  unnest(Genes)%>% as_vector()
+no9 <- GO_res_up_a7 [9,5] %>% dplyr::mutate(Genes=strsplit(Genes,","))%>%
+  unnest(Genes)%>% as_vector()
+no10 <- GO_res_up_a7 [10,5] %>% dplyr::mutate(Genes=strsplit(Genes,","))%>%
+  unnest(Genes)%>% as_vector()
+no11 <- GO_res_up_a7 [11,5] %>% dplyr::mutate(Genes=strsplit(Genes,","))%>%
+  unnest(Genes)%>% as_vector()
+no12 <- GO_res_up_a7 [12,5] %>% dplyr::mutate(Genes=strsplit(Genes,","))%>%
+  unnest(Genes)%>% as_vector()
+no13 <- GO_res_up_a7 [13,5] %>% dplyr::mutate(Genes=strsplit(Genes,","))%>%
+  unnest(Genes)%>% as_vector()
+no14 <- GO_res_up_a7 [14,5] %>% dplyr::mutate(Genes=strsplit(Genes,","))%>%
+  unnest(Genes)%>% as_vector()
+no15 <- GO_res_up_a7 [15,5] %>% dplyr::mutate(Genes=strsplit(Genes,","))%>%
+  unnest(Genes)%>% as_vector()
+no16 <- GO_res_up_a7 [16,5] %>% dplyr::mutate(Genes=strsplit(Genes,","))%>%
+  unnest(Genes)%>% as_vector()
+no17 <- GO_res_up_a7 [17,5] %>% dplyr::mutate(Genes=strsplit(Genes,","))%>%
+  unnest(Genes)%>% as_vector()
+no18 <- GO_res_up_a7 [18,5] %>% dplyr::mutate(Genes=strsplit(Genes,","))%>%
+  unnest(Genes)%>% as_vector()
+no19 <- GO_res_up_a7 [19,5] %>% dplyr::mutate(Genes=strsplit(Genes,","))%>%
+  unnest(Genes)%>% as_vector()
+no20 <- GO_res_up_a7 [20,5] %>% dplyr::mutate(Genes=strsplit(Genes,","))%>%
+  unnest(Genes)%>% as_vector()
+no21 <- GO_res_up_a7 [21,5] %>% dplyr::mutate(Genes=strsplit(Genes,","))%>%
+  unnest(Genes)%>% as_vector()
+no22 <- GO_res_up_a7 [22,5] %>% dplyr::mutate(Genes=strsplit(Genes,","))%>%
+  unnest(Genes)%>% as_vector()
+no23 <- GO_res_up_a7 [23,5] %>% dplyr::mutate(Genes=strsplit(Genes,","))%>%
+  unnest(Genes)%>% as_vector()
+no24 <- GO_res_up_a7 [24,5] %>% dplyr::mutate(Genes=strsplit(Genes,","))%>%
+  unnest(Genes)%>% as_vector()
+no25 <- GO_res_up_a7 [25,5] %>% dplyr::mutate(Genes=strsplit(Genes,","))%>%
+  unnest(Genes)%>% as_vector()
+x3 <- list("nucleolus"=no1,
+      "transmembrane transport"=no2,
+      "nucleotide binding"=no3,
+      "structural constituent of ribosome"=no4,
+      "endonucleolytic cleavage in ITS1"=no5,
+      "nucleic acid binding"=no6,
+      "rRNA processing"=no7,
+      "preribosome, large subunit precursor"=no8,
+      "maturation of SSU-rRNA from tricistronic rRNA transcript"=no9,
+      "ribosomal large subunit biogenesis"=no10,
+      "maturation of LSU-rRNA from tricistronic rRNA transcript	"=no11,
+      "endonucleolytic cleavage in 5'-ETS of tricistronic rRNA transcript"=no12,
+      "cytosolic large ribosomal subunit"=no13,
+      "small-subunit processome"=no14,
+      "endonucleolytic cleavage to generate mature 5' SSU-rRNA"=no15,
+      "catalytic activity"=no16,
+      "ribosomal small subunit biogenesis"=no17,
+      "ribosomal large subunit assembly"=no18,
+      "cytoplasmic translation"=no19,
+      "tRNA methylation"=no20,
+      "maturation of 5.8S rRNA from tricistronic rRNA transcript"=no21,
+      "RNA helicase activity"=no22,
+      "U3 snoRNA binding"=no23,
+      "rRNA primary transcript binding"=no24,
+      "post-mRNA release spliceosomal complex"=no25)
+
+GO_net_up_a7_v2 <- cnetplot(x3, 
+                           showCategory=25,
+                           node_label="gene", 
+                           layout="kk", 
+                           cex.params= list(category_node=0.5, 
+                                            gene_label=0.5),  
+                           color.params=list(edge=TRUE, 
+                                             category="black", 
+                                             gene="grey"))+
+  theme(legend.position='none')
+GO_net_up_a7_v2
+```
+```{r CnetUpa7, fig.cap='**Concept network of upregulated GO terms from SDBs of NCPF8978**', out.width='65%'}
+knitr::include_graphics('01_GO_concept_up_a7.png')#{width='35%', height='35%'}
+```
+<font size='2' color='#317EAC'> Black coloured nodes and associated edge colours represent each GO term, whilst individual genes are depicted as grey nodes.</font>
+
+***
+
+### Downregulated in SDBs
+
+GO enrichment analysis was performed on the set of downregulated DEGs from NCPF8978 to determine gene categories or pathways which are less utilised in SDBs relative to planktonic cells. The results of GO analysis are shown in **Table** <font color='#2FA4E7'> **7.32** </font>.
+
+```{r GODownrega7}
+a7_Down_cluster_2<- clusterProfiler::enricher(gene=a7_Down$ID_Name,  
+                           pvalueCutoff=0.05,
+                           pAdjustMethod="BH",
+                           universe = Tx_map$ID_Name,
+                           TERM2GENE=everything[,c(3,2)],
+                           TERM2NAME=everything[,c(3,4)])
+
+GO_res_down_a7_cluster_2 <- tibble(a7_Down_cluster_2@result)
+colnames(GO_res_down_a7_cluster_2) <- c("GO term","Description","Gene Ratio","Background Ratio", "P-value",
+                                      "Adjusted P-value","Q-value","Genes","Count")
+GO_res_down_a7_cluster_2 <- tibble(merge(x=GO_res_down_a7_cluster_2, y=GO_total, by='GO term', all.x=TRUE, all.y=FALSE))
+GO_res_down_a7_cluster_2 <- GO_res_down_a7_cluster_2%>% dplyr::select("GO term","Description.x","Category","Count","Genes",
+                                                                  "Gene Ratio","Background Ratio", "P-value","Adjusted P-value","Q-value")%>%
+  dplyr::rename("Description"="Description.x")
+GO_res_down_a7_cluster_2$Genes <- str_replace_all(string= GO_res_down_a7_cluster_2$Genes, pattern="/", replacement = ", ")
+GO_res_down_a7_cluster_2 <- GO_res_down_a7_cluster_2 %>% 
+  mutate(Enriched=case_when(c(`P-value` <0.05 & `Q-value`<0.05) ~ "Yes",
+                            c(`P-value` <0.05 & `Q-value`>=0.05) ~ "No",
+                            c(`P-value`>=0.05 & `Q-value`>=0.05) ~ "No")) %>% 
+  dplyr::arrange(desc(Enriched), desc(Count))
+
+datatable(GO_res_down_a7_cluster_2, 
+                       extensions = c('KeyTable', "FixedHeader"), 
+                       caption = htmltools::tags$caption(style = 'caption-side: top; text-align: left; color:grey',
+                                                htmltools::tags$span("Table 7.32:"),
+                                                htmltools::tags$span("Gene Ontology results for downregulated DEGs",
+                                                                     style="font-weight:bold")
+                                                ),
+                       escape = FALSE, #necessary to achieve the subscript above using html coding
+                       options = list(keys = TRUE, searchHighlight = TRUE, pageLength =5,
+                                      lengthMenu = c(5,10,25,50,100),
+                                      columnDefs = list(list(targets = 5,
+                                                render = JS("function(data, type, row, meta) {",
+                                                            "return type === 'display' && data.length > 20 ?",
+                                                            "'<span title=\"' + data + '\">' + data.substr(0, 20) + '...</span>' : data;",
+                                                            "}")
+                                                )
+                                           )
+                                      )
+          ) %>% formatSignif(columns = c("P-value","Adjusted P-value","Q-value"), digits = 3)
+```
+
+A total of `r nrow(GO_res_down_a7_cluster_2)` GO terms were associated with the downregulated gene set (**Table** <font color='#2Fa7E7'> **7.32**</font>). Over-representation analysis of the downregulated genes in SDBs identified a total of `r sum(GO_res_down_a7_cluster_2$Enriched=="Yes")` enriched GO terms (**Fig.** **\@ref(fig:GODowna7)**). The term with the greatest number of associated genes was "transmembrane transport" (GO:0055085), which had a total of `r GO_res_down_a7_cluster_2$Count[1]` genes associated with it.
+
+```{r GODowna7, fig.cap= "**Enriched GO terms for downregulated genes from semi-dry biofilms**"}
+GO_res_down_a7_cluster_2 <- GO_res_down_a7_cluster_2[GO_res_down_a7_cluster_2$`P-value`<0.05,]
+GO_res_down_a7_cluster_2 <- GO_res_down_a7_cluster_2[GO_res_down_a7_cluster_2$`Q-value`<0.05,]##yields 11 GO IDs
+GO_res_down_a7_cluster_2 <- GO_res_down_a7_cluster_2 %>% dplyr::mutate(GO= paste0(Description," (",`GO term`,")"))
+GO_down_a7_cluster <- ggplot(GO_res_down_a7_cluster_2, aes(y=GO))+
+  geom_col(aes(x=Count, fill=-log10(`Adjusted P-value`))) + 
+  scale_y_discrete(limits=rev) +
+  scale_x_continuous(breaks = seq(0,25,5))+
+  scale_fill_viridis_c(option="B", begin=0.9, end=0.15)+
+  facet_grid(rows = vars(GO_res_down_a7_cluster_2$Category), 
+             scales = "free_y", 
+             space = "free_y") +
+   theme(legend.position="none",
+        axis.title = element_blank())
+ggplotly(plot=GO_down_a7_cluster)%>%
+  layout(yaxis= list(title= "GO term"),
+         xaxis= list(title= "Number of genes"))
+```
+<font size='2' color='#317EAC'>The number of downregulated genes were plotted against their associated GO term and colour coded for the q-value. </font>
+
+The concept network of genes and GO terms for the downregulated set shows a large, single cluster of all `r sum(GO_res_down_a7_cluster_2$Enriched=="Yes")` GO terms and associated genes, except "`r GO_res_down_a7_cluster_2$Description[9]`" (GO:0000142; [**Fig.** **\@ref(fig:CnetDowna7)**]).
+
+
+```{r Step7A.7.2a7}
+GO_net_down_a7 <- cnetplot(a7_Down_cluster_2, 
+                           showCategory=12,
+                           node_label="gene", 
+                           layout="kk", 
+                           cex.params= list(category_node=0.5, 
+                                            gene_label=0.5),  
+                           color.params=list(edge=TRUE, 
+                                             category="black", 
+                                             gene="grey"))+
+  theme(legend.position='none')
+GO_net_down_a7
+```
+```{r CnetDowna7, fig.cap='**Concept network of downregulated GO terms**'} 
+knitr::include_graphics('01_GO_concept_down_a4.png')#{width='50%', height='50%'}
+```
+<font size='2' color='#317EAC'> Black coloured nodes and associated edge colours represent each GO term, whilst individual genes are depicted as grey nodes.</font>
+
+***
+
+# Differentially-expressed genes of interest {#DEGs .tabset .tabset-pills}
+
+## Genes of interest {#goi}
+
+Individual genes from the set of DEGs in the combined analysis were further examined to identify similar functions which may not have been detected by GO over-representation analysis. The expression of these genes, categorised by function and colour coded for significance of differential expression, is shown in **Fig.** **\@ref(fig:IntDEGa1)**. 
+
+```{r IntDEGa1, fig.cap="**Differentially-expressed genes of interest in semi-dry biofilms**", out.height='150%'}
+a1_1_interest <-c("B9J08_000558", "B9J08_001487", "B9J08_001523", "B9J08_001542", "B9J08_001547",
+                  "B9J08_001548" , "B9J08_001952","B9J08_002251", "FCY2", "B9J08_003036",
+                   "B9J08_003830", "B9J08_003921", "B9J08_000002",
+                  "B9J08_004097", "B9J08_004452", "FCY24", "B9J08_005289", "B9J08_005322",
+                  "CDR1","CDR4","SIT1", "ERG3", "ERG6", 
+                  "FET31", "FRE9", "FTH1", "GPT1", "MCH2", 
+                  "MNN26", "MSB1", "PGA31", "PHO84", "RAD50", 
+                  "SEF1","EMW1","FIG1","CRZ2", "GAL4", 
+                  "HAP41", "HAP42","TMA19", "TRY4", "ZCF4")
+a1_1_interest <- tibble(a1_1[a1_1$ID_Name %in% a1_1_interest,])
+a1_1_interest <- a1_1_interest %>% dplyr::arrange(ID_Name)
+a1_1_interest$Category <- c("Predicted transporter","Predicted transporter","Predicted transporter", "Predicted transporter",
+                            "Predicted transporter","Predicted transporter", "Predicted transporter",
+                            "Predicted transporter",
+                            "Predicted transporter","Predicted transporter","Predicted transporter",
+                            "Predicted transporter","Predicted transporter","Predicted transporter",
+                            "Predicted transporter", "Predicted transporter","Transporter",
+                            "Transporter","Transcription factor","Stress response",
+                            "Sterol metabolism","Sterol metabolism","Transporter",
+                            "Transporter","Iron homeostasis","Cell wall protein",
+                            "Iron homeostasis","Iron homeostasis", "Transcription factor",
+                            "Transporter","Transcription factor", "Transcription factor",
+                            "Transporter","Cell wall remodelling","Cell wall remodelling",
+                            "Cell wall protein","Transporter","Stress response",
+                            "Transcription factor", "Iron homeostasis", "Stress response",
+                            "Transcription factor", "Transcription factor")
+
+a1_2_interest <- c("ACE2", "CDR2","CHS1", "CHT3", "CRH11", "DSE1",
+                    "FGR41", "FSF1", "GFA1","HEM13", "HMX1",
+                    "INO1", "INO2", "IRS4","ISA1", "ISC1",
+                    "NCE103", "NFU1", "PGA26","PGA38", "PGA54",
+                    "PGA58", "PGA6", "PIR1", "RBE1", "SAP9",
+                   "SCW11", "SOD6", "SUN41","YPS3", "B9J08_000930",
+                   "B9J08_002858","IFR1","BRG1", "ECM7", "GAP1",
+                    "HGT2","HGT7", "FBP1", "IAH1", "ICL1",
+                   "TYE7","YMC2", "ZCF23", 'COX4')
+a1_2_interest <- a1_2[a1_2$ID_Name %in% a1_2_interest,] %>% as_tibble %>% dplyr::arrange(ID_Name)
+a1_2_interest$Category <- c("Transcription factor", "Predicted transporter","Predicted transporter",
+                            "Transcription factor", "Transporter","Cell wall remodelling", 
+                            "Cell wall remodelling", "Carbon metabolism",
+                            "Cell wall remodelling","Cell wall protein", "Transporter/ Stress response", 
+                            "Carbon metabolism","Cell wall remodelling", 
+                            "Iron homeostasis", "Transporter","Cell wall remodelling",
+                            "Iron homeostasis",  "Transporter","Transporter",
+                            "Iron homeostasis",
+                            "Carbon metabolism", "Carbon metabolism","Transcription factor",
+                            "Inositol metabolism",
+                            "Transcription factor", "Inositol metabolism", "Iron homeostasis",
+                            "Inositol metabolism", "Stress response", "Iron homeostasis/ Oxidative stress", 
+                            "Cell wall protein", "Cell wall protein", "Cell wall protein", 
+                            "Cell wall protein", "Cell wall protein", "Cell wall protein",
+                            "Sterol metabolism", "Cell wall protein","Cell wall protein",
+                            "Stress response", "Cell wall remodelling","Transcription factor",
+                            "Predicted transporter", "Cell wall protein", "Transcription factor")
+
+a1_interest <- rbind(a1_1_interest, a1_2_interest)%>% dplyr::arrange(ID_Name)
+a1_interest <- a1_interest %>% dplyr::rename('Result'='result',
+                                               'Gene'='ID_Name')
+a1_interest_extra <- a1_interest[rep(30,2),] #for ECM7
+a1_interest <- a1_interest[-30,]
+a1_interest_extra$Category[2] <- "Transporter"
+a1_interest_extra$Category[1] <- "Stress response"
+a1_interest <- rbind(a1_interest, a1_interest_extra)%>% dplyr::arrange(Gene)
+a1_interest_extra <- a1_interest[rep(79,2),] #for SEF1
+a1_interest <- a1_interest[-79,]
+a1_interest_extra$Category[2] <- "Transcription factor"
+a1_interest_extra$Category[1] <- "Iron homeostasis"
+a1_interest <- rbind(a1_interest, a1_interest_extra)%>% dplyr::arrange(Gene)
+a1_interest_extra <- a1_interest[rep(66,2),] #for NFU1
+a1_interest <- a1_interest[-66,]
+a1_interest_extra$Category[1] <- "Stress response"
+a1_interest_extra$Category[2] <- "Iron homeostasis"
+a1_interest <- rbind(a1_interest, a1_interest_extra)%>% dplyr::arrange(Gene)
+remove(a1_interest_extra)
+
+a1_1_transporters <- a1_interest[a1_interest$Category=="Predicted transporter",]
+a1_interest <- a1_interest[a1_interest$Category!="Predicted transporter",]
+
+a1_interest_plot <- ggplot(a1_interest)+
+  aes(x=Result, y=Gene, size=abs(logFC), colour=-log10(adj.P.Val))+
+  geom_point(show.legend=T,alpha=0.8)+
+  ylab("Gene")+
+  xlab("Differential expression in semi-dry biofilms")+
+  scale_colour_viridis_c(option="B", begin=0.9, end=0.15)+
+  scale_y_discrete(limits=rev)+
+  theme(legend.position="none",
+        plot.margin=margin(t=5,r=10,b=5,l=5),
+        axis.title = element_text(size=12, face='bold'),
+        axis.text.y=element_text(face="italic"),
+        axis.title.x=element_text(margin = margin(t=10,r=0,b=0,l=0)),
+        axis.title.y=element_text(margin = margin(t=0,r=10,b=0,l=0)),
+        panel.margin.x = unit(0.5,"lines"), panel.margin.y = unit(1,"lines"))+ 
+  facet_wrap(~Category, scales="free_y", ncol=3)
+ggplotly(a1_interest_plot, dynamicTicks = FALSE, width=700, height=900) %>%
+  layout(autosize=T)
+```
+
+<font size='2' color='#317EAC'> Differentially expressed genes (DEGs) between semi-dry biofilms and planktonic cells were selected based on log2-fold change ≥1.5 in either direction, and q-value <0.01. Data were combined from C. auris isolates NCPF8973 and NCPF8978. Functional annotations from the Candida Genome Database were used to select DEGS from similar categories. Node size represents the absolute fold change between SDB and PK cells, where upregulated genes had higher expression in SDB cells and downregulated had higher expression in PK cells. The colour-scale represents the q-value from multiple comparisons testing to confirm differential expression. </font>
+
+Collectively, the combined differential gene expression data from the two isolates confirm cellular and biochemical data reported previously in chapter 3 of this thesis, showing that _C. auris_ SDBs contain metabolically active cells following the final growth cycle, although cellular division is downregulated. Mechanistically, transmembrane transporter activity and iron homeostasis appear to be key processes in the formation and/or maintenance of SDBs in _C. auris_.
+
+*** 
+
+## Differential expression by isolate {#isolates}
+
+Given that there appeared to be several DEGs that were expressed 
+
+## Transmembrane transporters {#transporters}
+
+Examination of the set of upregulated genes found a number of uncharacterised ORFs with predicted roles in transmembrane transport, all of which are detailed in **Fig.** **\@ref(fig:allTransporters)**. Sequence homology was used to assign these ORFs 'best hits' to genes in _C. albicans_ and/or _S. cerevisiae_, which are detailed in the figure.
+
+```{R allTransporters, fig.cap='**Predicted transporters are upregulated in _C. auris_ semi-dry biofilms**'}
+a1_1_transporters <- a1_1_transporters[a1_1_transporters$Result=="Up",]
+a1_1_transporters$`Best hit(s)` <- c("CaSIT1, ScENB1", "Unknown", "CaSIT1, ScARN1", "ScPUL3", "CaSIT1, ScSIT1","CaSIT1, ScARN1",
+                               "CaSIT1, ScARN2","CaFUR4, ScNRT1","CaHGT2, ScHXT13", "ScBSC6", "CaPTR22, ScPTR2","CaSIT1, ScARN1",
+                               "CaSIT1, ScARN1","CaSNQ2, ScSNQ2","CaGAP2, ScGAP1","Unknown")
+a1_1_transplot <- ggplot(a1_1_transporters, aes(text=paste('Best hit(s): ',`Best hit(s)`)))+
+  aes(x=Result, y=Gene, size=abs(logFC), colour=-log10(adj.P.Val))+
+  geom_point(show.legend=T,alpha=0.8)+
+  scale_color_viridis_c(option="B", begin=0.9, end=0.15)+
+  scale_y_discrete(limits=rev)+
+  labs(y="Open reading frame",
+       x="Upregulated")+
+  theme(axis.text.x = element_blank(),
+        axis.title=element_text(size=12, face='bold'),
+        axis.title.y = element_text(margin = margin(t=0,r=10,b=0,l=0)),
+        legend.position = 'none')
+ggplotly(a1_1_transplot)
+
+```
+
+<font size='2' color='#317EAC'> Uncharacterised open reading frames with predicted transmembrane domains identified amongst the upregulated gene set during differential gene expression analysis were plotted according to fold-change (log2FC) and q-value. Differential gene expression was determined using combined data from C. auris NCPF8973 and NCPF8978 isolates. 'Best hits' for each open reading frame were assigned on the Candida Genome Database based on sequence similarity to known genes in the _Candida albicans_ (Ca) and _Saccharomyces cerevisiae_ (Sc) genomes. </font>
+
+Given that GO enrichment analysis identified over-representation of transmembrane transporters, and that such transporters are known mechanisms of antimicrobial resistance in other biofilm models, DEGs were examined for transport-related functions. In general, expression of genes encoding individual transporters was upregulated by biofilms (**Figure 12**). Sixteen upregulated ORFs with putative roles in transport were found, including several with similarity to _ScPUL3_ (B9J08_001523), _CaFUR4_ (B9J08_001952) and _SNQ2_ (B9J08_004452; **Figure 12**). Seven uncharacterised ORFs thought to be members of the SIT1 family, which is expanded in C. auris relative to other Candida spp. [(Muñoz et al. 2018)](https://doi.org/10.1038/s41467-018-07779-6), were also upregulated in SDBs (logFC= 2.1-8.2; **Figure 12**). This includes the two most highly upregulated ORFs B9J08_001548 (logFC =8.2) and B9J08_001547 (logFC =6.7; Figure 4.7), which remained in the top three-most highly upregulated genes for each isolate, with similar log-FCs.
+
+****
+
+
+
+# Post-script {#ps}
+## Acknowledgements {#ack}
+The pipeline for transcriptomics analysis was adapted from the [DIY Transcriptomics](https://diytranscriptomics.com) course by Dr Dan Beiting, available through the University of Pennsylvania. Further help with R coding was provided by Dr Chris Delaney at the University of Glasgow.
+
+***
+
+## Session info {#session-info}
+
+This interactive report was created using Rmarkdown and the [**Knitr** package](https://yihui.name/knitr/), and summarises the code and outputs produced during the transcriptomics analysis. All programs and R packages used here are open-sourced and freely available from the Comprehensive R Archive Network (CRAN), [Bioconductor](https://www.bioconductor.org), or Github. Graphics and data wrangling were conducted using the [**tidyverse** suite of packages](https://www.tidyverse.org/), interactive graphics were compiled using the [**plotly** package](https://plotly.com/r/) and interactive tables were compiled using the [**DT** package](https://rstudio.github.io/DT/). A comprehensive list of packages can be found in the code chunk below.
+```{R Session info}
+sessioninfo::session_info()%>%
+  details::details(
+    summary = 'Current session info',
+    open    = TRUE
+  )
+```
