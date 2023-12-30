@@ -740,10 +740,12 @@ In this analysis, the first PC accounted for `r pc_per_a7$Variance[1]`% of the v
 
 # Differential Gene Expression analysis {#DGE-analysis .tabset .tabset-pills}
 
+Differentially-expressed genes between SDB and PK samples from both isolates were identified using the voom algorithm and associated statistical functions from the [Limma package](http://bioinf.wehi.edu.au/limma/). Using this pipeline, the mean-variance trend of the log-cpm data at the gene level is estimated using a non-normal distribution and used to predict the variance for each individual log-cpm value. Predicted variance is then used as a precision weight during linear-modelling of the data to estimate log~2~-adjusted fold changes (logFC) between groups of samples as specified in the study design. Finally, moderated t- and F- statistics, as well as the log-odds of differential expression between two groups are estimated using an empirical Bayes shrinkage method. 
+
 ## Combined analysis {#DGEa1}
 ### Determining relative expression levels {#limmaa1}
 
-Differentially-expressed genes between SDB and PK samples from both isolates were identified using the voom algorithm and associated statistical functions from the [Limma package](http://bioinf.wehi.edu.au/limma/). Using this pipeline, the mean-variance trend of the log-cpm data at the gene level is estimated using a non-normal distribution and used to predict the variance for each individual log-cpm value. Predicted variance is then used as a precision weight during linear-modelling of the data to estimate fold changes between groups of samples as specified in the study design. Finally, moderated t- and F- statistics, as well as the log-odds of differential expression between two groups are estimated using an empirical Bayes shrinkage method. Table containing the ten genes with the greatest absolute logFC between SDB and PK groups is shown in **Table** **\@ref(tab:DGEa1)** to illustrate the outputs of the limma analysis pipeline for this dataset.
+The results of the limma-voom analysis pipeline for all `r nrow(norm_filt_DGEList_a1)` genes in the combined-isolate analysis is given in **Table** <font color='#2FA4E7'>**6.11** </font>. Differential expression was calculated in SDB samples relative to PK samples, such that a positive logFC represents upregulation in SDBs, and a negative logFC downregulation in SDBs (or upregulation in PK cells). This table can be searched to find the results of all expressed genes within the combined-isolate dataset.
 
 ```{r DGEa1}
 design_a1 <- model.matrix(~0 + group_a1)
@@ -764,21 +766,31 @@ top_hits_a1 <- topTable(eb_fit_a1, adjust ="BH", coef=1, number=5500, sort.by="l
 top_hits_df_a1 <- top_hits_a1%>% as_tibble(rownames = "ID")
 top_hits_df_a1 <- merge(x=Tx_map, all.x=FALSE, y=top_hits_df_a1, all.y=TRUE, by='ID')
 top_hits_df_a1 <- top_hits_df_a1 %>% dplyr::rename('Gene'='ID_Name')
-knitr::kable(head(top_hits_df_a1, n=10),booktabs=TRUE, caption= "**Outputs of the limma differential gene expression analysis pipeline**")
+
+datatable(top_hits_df_a1[,2:8],
+          extensions = c('KeyTable', "FixedHeader"),
+          caption= htmltools::tags$caption(style='caption-side top; text-align: left; color: grey',
+                                           htmltools::tags$span("Table 6.11"),
+                                           htmltools::tags$span("Outputs of the limma differential gene expression analysis pipeline",
+                                                                style='font-weight: bold')),
+          colnames=c("Gene","Log<sub>2</sub> fold change","Average expression","t","P-value","Adjusted p-value","B"),
+          escape = FALSE,
+          options= list(pageLength=10, searchHighlight=TRUE, keys=TRUE)
+          ) %>% formatSignif(columns = c("logFC", "AveExpr","t","P.Value","adj.P.Val","B"), digits = 3)
 ```
 
+The outputs of the limma analysis pipeline are as follows:
 
-The outputs of the limma analysis pipeline are explained below.
++ _Log~2~ fold change_: reports the log~2~-adjusted fold change (logFC) between groups as specified by the contrast matrix; here, the specified contrast was SDB - PK, therefore positive values represent genes more highly expressed in the SDB group, and negative values those more highly expressed in the PK group.
 
-+ _LogFC_: reports the log~2~-fold change between groups as specified by the contrast matrix; here, the specified contrast was SDB - PK, therefore positive values represent genes more highly expressed in the SDB group, and negative values those more highly expressed in the PK group.
-
-+ _AveExpr_ is the average log~2~-CPM for the gene across all samples in the experiment. 
++ _Average expression_ is the average log~2~-CPM for the gene across all samples in the experiment. 
 
 + _t_ gives the moderated t-statistic, which is the ratio of the logFC to the standard error.
 
-+ The _P.Value_ is the associated p-value, whereas the _adj.P.Val_ is the false discovery rate determined by the Benjamini-Hochberg method. 
++ The _p-value_ is the associated p-value, whereas the _adjusted p-value_ is the false discovery rate determined by the Benjamini-Hochberg method. 
 
-+ Finally, _B_ describes the log-odds that the gene is truly differentially expressed. For example: B9J08_001548 returns a B of `r round(top_hits_df_a1$logFC[1],2)`, so the odds that this transcript is differentially expressed between phenotypes is _e_^`r round(top_hits_df_a1$logFC[1],2)`^ or `r format(round(exp(7.814261067),0), scientific=FALSE)` to 1.
++ Finally, _B_ describes the log-odds that the gene is truly differentially expressed. For example: B9J08_001548 returns a B of `r round(top_hits_df_a1$B[1473],2)`, so the odds that this transcript is differentially expressed between phenotypes is _e_^`r round(top_hits_df_a1$B[1473],2)`^ or `r format(round(exp(top_hits_df_a1$B[1473]),0), scientific=FALSE)` to 1.
+
 
 ***
 
@@ -854,11 +866,11 @@ my_diff_genes_a1 <- my_diff_genes_a1%>%
 
 datatable(my_diff_genes_a1,
           extensions = c('KeyTable', "FixedHeader"),
-          caption = htmltools::tags$caption(style = 'caption-side: top; text-align: left;',
-                                            htmltools::tags$span("Table 6.12:", style="color:black"),
+          caption = htmltools::tags$caption(style = 'caption-side: top; text-align: left; color: grey',
+                                            htmltools::tags$span("Table 6.12:"),
                                             htmltools::tags$span(c("DEGs in semi-dry biofilms of ",htmltools::em("Candida auris"),
                                                                     " relative to planktonic cells"),
-                                                                 style="font-weight:bold;color:black")),
+                                                                 style="font-weight:bold")),
           colnames = c("Gene", "Semi-dry biofilms", "Planktonic cells",
                        "Log<sub>2</sub> fold change", "Adjusted p-value"),
           escape = FALSE,
@@ -871,7 +883,7 @@ datatable(my_diff_genes_a1,
 ## NCPF8973 {#DGEa4}
 ### Determining relative expression levels {#limmaa4}
 
-Differentially-expressed genes between SDB and PK samples from NCPF8973 were identified using the same pipeline as the combined isolate analysis, as explained above.
+Differentially-expressed genes between SDB and PK samples from NCPF8973 were identified using the same pipeline as the combined isolate analysis, as explained above (**Table** <font color='#2FA4E7'>**6.21**</font>). As before, logFC were calculated by comparing the SDB samples to the PK samples. A positive logFC therefore indicates upregulation in SDBs of NCPF8973, and vice versa for negative logFC values. This table can be searched to find the results of all expressed genes within the NCPF8973 dataset.
 
 ```{r DGEa4}
 design_a4 <- model.matrix(~0 + group_a4)
@@ -892,7 +904,17 @@ top_hits_a4 <- topTable(eb_fit_a4, adjust ="BH", coef=1, number=5500, sort.by="l
 top_hits_df_a4 <- top_hits_a4%>% as_tibble(rownames = "ID")
 top_hits_df_a4 <- merge(x=Tx_map, all.x=FALSE, y=top_hits_df_a4, all.y=TRUE, by='ID')
 top_hits_df_a4 <- top_hits_df_a4 %>% dplyr::rename('Gene'='ID_Name')
-knitr::kable(head(top_hits_df_a4, n=10),booktabs=TRUE, caption= "**Outputs of the limma differential gene expression analysis pipeline for NCPF8973**")
+
+datatable(top_hits_df_a4[,2:8],
+          extensions = c('KeyTable', "FixedHeader"),
+          caption= htmltools::tags$caption(style='caption-side top; text-align: left; color: grey',
+                                           htmltools::tags$span("Table 6.21"),
+                                           htmltools::tags$span("Outputs of the limma differential gene expression analysis pipeline for NCPF8973 samples",
+                                                                style='font-weight: bold')),
+          colnames=c("Gene","Log<sub>2</sub> fold change","Average expression","t","P-value","Adjusted p-value","B"),
+          escape = FALSE,
+          options= list(pageLength=10, searchHighlight=TRUE, keys=TRUE)
+          ) %>% formatSignif(columns = c("logFC", "AveExpr","t","P.Value","adj.P.Val","B"), digits = 3)
 ```
 
 ***
@@ -969,10 +991,10 @@ my_diff_genes_a4 <- my_diff_genes_a4%>%
 
 datatable(my_diff_genes_a4,
               extensions = c('KeyTable', "FixedHeader"),
-              caption = htmltools::tags$caption(style = 'caption-side: top; text-align: left;',
-                                                htmltools::tags$span("Table 6.22:", style="color:black"),
+              caption = htmltools::tags$caption(style = 'caption-side: top; text-align: left; color:grey',
+                                                htmltools::tags$span("Table 6.22:"),
                                                 htmltools::tags$span("DEGs in semi-dry biofilms of NCPF8973, relative to planktonic cells"),
-                                                                     style="font-weight:bold; color:black"),
+                                                                     style="font-weight:bold"),
               colnames = c("Gene", "Semi-dry biofilms", "Planktonic cells",
                            "Log<sub>2</sub> fold change", "Adjusted p-value"),
               escape = FALSE, 
@@ -985,7 +1007,7 @@ datatable(my_diff_genes_a4,
 ## NCPF8978 {#DGEa7}
 ### Determining relative expression levels {#limmaa7}
 
-Differentially-expressed genes between SDB and PK samples from NCPF8973 were identified using the same pipeline as the combined isolate analysis, as explained above.
+Data from isolate NCPF8978 samples were also analysed using the limma-voom pipeline, and the outputs can be examined in **Table** <font color='#2FA4E7'>**6.31** </font>. Expression in SDB samples was compared to the PK samples for all genes, and positive FC values represent upregulation in the SDB group. This table can be searched to find the results of all expressed genes within the NCPF8978 dataset.
 
 ```{r DGEa7}
 design_a7 <- model.matrix(~0 + group_a7)
@@ -1006,7 +1028,17 @@ top_hits_a7 <- topTable(eb_fit_a7, adjust ="BH", coef=1, number=5500, sort.by="l
 top_hits_df_a7 <- top_hits_a7%>% as_tibble(rownames = "ID")
 top_hits_df_a7 <- merge(x=Tx_map, all.x=FALSE, y=top_hits_df_a7, all.y=TRUE, by='ID')
 top_hits_df_a7 <- top_hits_df_a7 %>% dplyr::rename('Gene'='ID_Name')
-knitr::kable(head(top_hits_df_a7, n=10),booktabs=TRUE, caption= "**Outputs of the limma differential gene expression analysis pipeline for NCPF8973**")
+
+datatable(top_hits_df_a7[,2:8],
+          extensions = c('KeyTable', "FixedHeader"),
+          caption= htmltools::tags$caption(style='caption-side top; text-align: left; color: grey',
+                                           htmltools::tags$span("Table 6.31"),
+                                           htmltools::tags$span("Outputs of the limma differential gene expression analysis pipeline for NCPF8978 samples",
+                                                                style='font-weight: bold')),
+          colnames=c("Gene","Log<sub>2</sub> fold change","Average expression","t","P-value","Adjusted p-value","B"),
+          escape = FALSE,
+          options= list(pageLength=10, searchHighlight=TRUE, keys=TRUE)
+          ) %>% formatSignif(columns = c("logFC", "AveExpr","t","P.Value","adj.P.Val","B"), digits = 3)
 ```
 
 ***
@@ -1083,10 +1115,10 @@ my_diff_genes_a7 <- my_diff_genes_a7%>%
 
 datatable(my_diff_genes_a7,
               extensions = c('KeyTable', "FixedHeader"),
-              caption = htmltools::tags$caption(style = 'caption-side: top; text-align: left;',
-                                                htmltools::tags$span("Table 6.32:", style="color:black"),
+              caption = htmltools::tags$caption(style = 'caption-side: top; text-align: left; color:grey',
+                                                htmltools::tags$span("Table 6.32:"),
                                                 htmltools::tags$span("DEGs in semi-dry biofilms of NCPF8978, relative to planktonic cells",
-                                                                     style="font-weight:bold; color:black")
+                                                                     style="font-weight:bold")
                                                 ),
               colnames = c("Gene", "Semi-dry biofilms", "Planktonic cells",
                            "Log<sub>2</sub> fold change", "Adjusted p-value"),
@@ -1240,10 +1272,10 @@ GO_res_up_a1 <- GO_res_up_a1 %>%
 
 datatable(GO_res_up_a1,
           extensions = c('KeyTable', "FixedHeader"),
-          caption = htmltools::tags$caption(style = 'caption-side: top; text-align: left;',
-                                            htmltools::tags$span("Table 7.11:", style="color:black"),
+          caption = htmltools::tags$caption(style = 'caption-side: top; text-align: left; color:grey',
+                                            htmltools::tags$span("Table 7.11:"),
                                             htmltools::tags$span("Gene Ontology results for upregulated DEGs",
-                                                                 style="font-weight:bold; color:black")
+                                                                 style="font-weight:bold")
                                             ),
           escape = FALSE,
           options = list(keys = TRUE, searchHighlight = TRUE, pageLength =5,
@@ -1340,10 +1372,10 @@ GO_res_down_a1_cluster_2 <- GO_res_down_a1_cluster_2 %>%
 
 int_GO_down <- datatable(GO_res_down_a1_cluster_2, 
                        extensions = c('KeyTable', "FixedHeader"), 
-                       caption = htmltools::tags$caption(style = 'caption-side: top; text-align: left;',
-                                                htmltools::tags$span("Table 7.2:", style="color:black"),
+                       caption = htmltools::tags$caption(style = 'caption-side: top; text-align: left;color:grey',
+                                                htmltools::tags$span("Table 7.12:"),
                                                 htmltools::tags$span("Gene Ontology results for downregulated DEGs",
-                                                                     style="font-weight:bold; color:black")
+                                                                     style="font-weight:bold")
                                                 ),
                        escape = FALSE, #necessary to achieve the subscript above using html coding
                        options = list(keys = TRUE, searchHighlight = TRUE, pageLength =5,
@@ -1530,10 +1562,10 @@ GO_res_up_a4 <- GO_res_up_a4 %>%
 
 datatable(GO_res_up_a4,
           extensions = c('KeyTable', "FixedHeader"),
-          caption = htmltools::tags$caption(style = 'caption-side: top; text-align: left;',
-                                            htmltools::tags$span("Table 7.21:", style="color:black"),
+          caption = htmltools::tags$caption(style = 'caption-side: top; text-align: left;color:grey',
+                                            htmltools::tags$span("Table 7.21:"),
                                             htmltools::tags$span("Gene Ontology results for upregulated DEGs in NCPF8973",
-                                                                 style="font-weight:bold; color:black")
+                                                                 style="font-weight:bold")
                                             ),
           escape = FALSE,
           options = list(keys = TRUE, searchHighlight = TRUE, pageLength =5,
@@ -1622,10 +1654,10 @@ GO_res_down_a4_cluster_2 <- GO_res_down_a4_cluster_2 %>%
 
 datatable(GO_res_down_a4_cluster_2, 
                        extensions = c('KeyTable', "FixedHeader"), 
-                       caption = htmltools::tags$caption(style = 'caption-side: top; text-align: left;',
-                                                htmltools::tags$span("Table 7.22:", style="color:black"),
+                       caption = htmltools::tags$caption(style = 'caption-side: top; text-align: left;color:grey',
+                                                htmltools::tags$span("Table 7.22:"),
                                                 htmltools::tags$span("Gene Ontology results for downregulated DEGs",
-                                                                     style="font-weight:bold; color:black")
+                                                                     style="font-weight:bold")
                                                 ),
                        escape = FALSE, #necessary to achieve the subscript above using html coding
                        options = list(keys = TRUE, searchHighlight = TRUE, pageLength =5,
@@ -1820,10 +1852,10 @@ GO_res_up_a7$Description[15] <-"endonucleolytic cleavage to generate mature 5' S
 
 datatable(GO_res_up_a7,
           extensions = c('KeyTable', "FixedHeader"),
-          caption = htmltools::tags$caption(style = 'caption-side: top; text-align: left;',
-                                            htmltools::tags$span("Table 7.31:", style="color:black"),
+          caption = htmltools::tags$caption(style = 'caption-side: top; text-align: left;color:grey',
+                                            htmltools::tags$span("Table 7.31:"),
                                             htmltools::tags$span("Gene Ontology results for upregulated DEGs in NCPF8978",
-                                                                 style="font-weight:bold; color:black")
+                                                                 style="font-weight:bold")
                                             ),
           escape = FALSE,
           options = list(keys = TRUE, searchHighlight = TRUE, pageLength =5,
@@ -1990,10 +2022,10 @@ GO_res_down_a7_cluster_2 <- GO_res_down_a7_cluster_2 %>%
 
 datatable(GO_res_down_a7_cluster_2, 
                        extensions = c('KeyTable', "FixedHeader"), 
-                       caption = htmltools::tags$caption(style = 'caption-side: top; text-align: left;',
-                                                htmltools::tags$span("Table 7.32:", style="color:black"),
+                       caption = htmltools::tags$caption(style = 'caption-side: top; text-align: left; color:grey',
+                                                htmltools::tags$span("Table 7.32:"),
                                                 htmltools::tags$span("Gene Ontology results for downregulated DEGs",
-                                                                     style="font-weight:bold; color:black")
+                                                                     style="font-weight:bold")
                                                 ),
                        escape = FALSE, #necessary to achieve the subscript above using html coding
                        options = list(keys = TRUE, searchHighlight = TRUE, pageLength =5,
