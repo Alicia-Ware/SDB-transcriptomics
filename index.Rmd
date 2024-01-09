@@ -68,16 +68,20 @@ options(width=200)
 
 # Introduction {#intro}
 
-_Candida auris_ is an enigmatic yeast recently named as one of four Critical Priority Group fungal pathogens by the World Health Organisation [(WHO, 2022)](https://www.who.int/publications/i/item/9789240060241). Whilst its ability to cause serious disseminated infections in vulnerable patients is concerning [(Singhal _et al._, 2023)](https://link.springer.com/article/10.1007/s12098-023-04672-z), of equal clinical concern is its ability to colonise the skin and mucosal surfaces of patients without symptoms [(Proctor _et al._, 2021)](https://doi.org/10.1038/s41591-021-01383-w), and to persist on surfaces, bedding and reusable equipment [(Welsh _et al._, 2017)](https://doi.org/10.1128/jcm.00921-17
-). This ability to persist in healthcare settings, often despite rigorous cleaning and disinfection protocols, presents key challenges for infection prevention and control of outbreaks and has been widely implicated in the transmissibility of _C. auris_ [(Piedrahita _et al._, 2017;](https://doi.org/10.1017/ice.2017.127) [Wong _et al_, 2023)](https://doi.org/10.1016/j.jhin.2022.12.020).
+_Candida auris_ is an enigmatic yeast recently named as one of four Critical Priority Group fungal pathogens by the World Health Organisation [(WHO, 2022)](https://www.who.int/publications/i/item/9789240060241). Whilst its ability to cause serious disseminated infections in vulnerable patients is concerning [(Singhal _et al._, 2023)](https://link.springer.com/article/10.1007/s12098-023-04672-z), of equal clinical concern is its ability to colonise the skin and mucosal surfaces of patients without symptoms [(Proctor _et al._, 2021)](https://doi.org/10.1038/s41591-021-01383-w), and to persist on surfaces, bedding and reusable equipment [(Welsh _et al._, 2017)](https://doi.org/10.1128/jcm.00921-17). This ability to persist in healthcare settings, often despite rigorous cleaning and disinfection protocols, presents key challenges for infection prevention and control of outbreaks and has been widely implicated in the transmissibility of _C. auris_ [(Piedrahita _et al._, 2017;](https://doi.org/10.1017/ice.2017.127) [Wong _et al_, 2023)](https://doi.org/10.1016/j.jhin.2022.12.020).
 
-Biofilm formation by _C. auris_ is a known virulence factor of this pathogen [(Horton & Nett, 2020)](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC7654955/), and likely contributes to its ability to survive and persist within the healthcare environment. Recently, _C. auris_ has shown limited ability to form _in vitro_ biofilms on dry surfaces [(Ledowoch & Maillard, 2018)](https://www.mdpi.com/1996-1944/12/1/18), although the isolate used in this study has since been characterised as a poor biofilm former [(Welsh _et al._, 2019)](https://doi.org/10.1128/jcm.00007-19). This type of biofilm has been widely studied _in situ_ using _Staphylococcus aureus_, where the organism has been detected on items and surfaces within the healthcare environment for long periods after use and/or disinfection [(Ledwoch _et al_, 2018)](https://doi.org/10.1016/j.jhin.2018.06.028). Experimental protocols of this biofilm model vary, but typically consist of alternating periods of growth in the presence and absence of liquid medium over 12 days [(Almatroudi _et al._, 2015)](https://linkinghub.elsevier.com/retrieve/pii/S0167701215300361). Previous work in this project has demonstrated that clinical  isolates of _C. auris_ from different phylogeographic backgrounds, and aggregative and biofilm-former phenotypes, developed robust biofilms using a semi-dry biofilm (SDB) protocol. Furthermore, the number of viable cells within these biofilms following surface disinfection with sodium hypochlorite (NaOCl), increased over successive cycles of growth, suggesting that this growth mode facilitates tolerance to biocidal agents.
+Biofilm formation by _C. auris_ is a known virulence factor of this pathogen [(Horton & Nett, 2020)](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC7654955/), and likely contributes to its ability to survive and persist within the healthcare environment. Recently, _C. auris_ has shown limited ability to form _in vitro_ biofilms on dry surfaces [(Ledowoch & Maillard, 2018)](https://www.mdpi.com/1996-1944/12/1/18), although the isolate used in this study has since been characterised as a poor biofilm former [(Welsh _et al._, 2019)](https://doi.org/10.1128/jcm.00007-19). This type of biofilm has been widely studied _in situ_ using _Staphylococcus aureus_, where the organism has been detected on items and surfaces within the healthcare environment for long periods after use and/or disinfection [(Ledwoch _et al_, 2018)](https://doi.org/10.1016/j.jhin.2018.06.028). Experimental protocols of this biofilm model vary, but typically consist of alternating periods of growth in the presence and absence of liquid medium over 12 days [(Almatroudi _et al._, 2015)](https://linkinghub.elsevier.com/retrieve/pii/S0167701215300361). 
 
-The biological mechanism behind SDB-mediated tolerance to NaOCl in these cells is unclear. The dry phase of the biofilm model may select for cells that are more intrinsically resistant to external stressors such as NaOCl, or that cells are primed to exhibit a robust stress response due to the ongoing stress conditions. The extracellular matrix and dead cells which accumulate as part of the biofilm's ultrastructure over time, may also act as a barrier that sequesters or slows the passage of the NaOCl molecules thereby reducing the effective concentration against live cells. This study used mRNA-sequencing (RNA-seq) and transcriptomics to identify cellular mechanisms of semi-dry biofilm formation, with a particular interest in genes which may contribute to NaOCl tolerance in biofilm cells. Sequencing was carried out on samples from planktonic (PK) and 12-day semi-dry biofilm (SDB) cells of two _C. auris_ isolates, NCPF8973 and NCPF8978, and transcriptomics analysis performed to investigate differential gene expression between SDB and PK cells by combining sequence data from both isolates. The research questions in this study were:
+Previous work in this project has demonstrated that clinical  isolates of _C. auris_ from different phylogeographic backgrounds, and aggregative and biofilm-former phenotypes, developed robust biofilms using a semi-dry biofilm (SDB) protocol. The number of viable cells within these biofilms following surface disinfection with sodium hypochlorite (NaOCl), increased over successive cycles of growth, suggesting that this growth mode facilitates tolerance to biocidal agents. The biological mechanism behind SDB-mediated tolerance to NaOCl amongst _C. auris_ is unclear. The dry phase of the biofilm model may select for cells that are more intrinsically resistant to external stressors such as NaOCl, or that cells are primed to exhibit a robust stress response due to the ongoing stress conditions. The extracellular matrix and dead cells which accumulate as part of the biofilm's ultrastructure over time, may also act as a barrier that sequesters or slows the passage of the NaOCl molecules thereby reducing the effective concentration against live cells. 
+
+Another finding from this project is that a sub-population of planktonic cells survive disinfection with NaOCl, and can reactivate and grow under the SDB protocol. These cells exhibited a slower growth rate and morphological differences compared to untreated cells, which may have resulted from an altered phenotype induced by NaOCl treatment. It is also possible that the pre-existing phenotype of these cells enabled their survival during NaOCl treatment. Furthermore, after three cycles of growth, the resulting SDBs demonstrated cellular densities and biomass that was similar to the untreated biofilms, suggesting that the phenotype of cells which survive and grow under this protocol is the same regardless of the cellular origin.
+
+The bioinformatics analysis herein used mRNA-sequencing (RNA-seq) and transcriptomics to identify cellular mechanisms of semi-dry biofilm formation, with a particular interest in genes which may contribute to NaOCl tolerance in biofilm cells relative to planktonic cells. Phenotypic differences between NaOCl pre-treated and untreated SDBs were also examined. Two _C. auris_ isolates, NCPF8973 and NCPF8978, were used in this study to capture some of the heterogeneity which is observed between clinical isolates of this species. Sequencing was carried out on planktonic cells (PK), as well as 12-day semi-dry biofilm cells of 'untreated' (UN) or NaOCl pre-treated (TX) origin. Transcriptomics analysis to investigate differential gene expression between both SDB models and PK cells was carried out using combined sequence data from both isolates, as well as the data from each individual isolate. The research questions in this study were:
 
 + Which categories of genes are differentially expressed by _C. auris_ cells grown under SDB conditions, relative to planktonic cells?
 + Are there any individual genes or patterns of gene expression which may contribute to the tolerance of _C. auris_ SDB cells to NaOCl?
 + Are there any significant differences between mechanisms of SDB formation between NCPF8973 and NCPF8978?
++ Are there any significant transcriptional differences between SDBs formed by pre-treated cells, relative to untreated cells?
 
 ***
 
@@ -309,7 +313,7 @@ The annotation file constructed for this analysis contains information for  `r n
 Expression data contained within the “abundance” output files from Kallisto were counted and read into the RStudio environment using the [TxImport](https://bioconductor.org/packages/tximport/) package (v1.28.0). The B9J08_xxxxxx gene names were maintained as the gene IDs to prevent errors resulting from the mixed common name/ gene ID format constructed in the annotation file. This file was later used to map the transcript IDs back to the mixed name/ID format as necessary.
 
 ```{r Step 2.1 & 2.3 - TxImport}
-targets <- read_csv("study_design.csv")
+targets <- read_csv("Study_design.csv")
 path <- file.path(targets$Sample, "abundance.tsv")
 
 Txi_gene <- tximport(path, 
@@ -326,10 +330,14 @@ Txi_gene <- tximport(path,
 
 A DGEList object was created using the eponymous function from the [EdgeR](	https://bioconductor.org/packages/edgeR/) package, with raw read count data for each sample. This object is a specialised object which stores the counts per each gene for each sample, as well as additional information such as library size (i.e. total number of reads) and normalisation factors. Data in the DGEList were converted to counts per million reads and log2-transformed (log2cpm) to account for heteroscedasticity in the dataset, filtered to remove genes with low counts across a minimum of 6 samples, and then normalised to account for the variation between samples in terms of library size and count distribution across genes.A tibble containing the log-cpm determined for each sample was created and used henceforth.
 
-## Combined analysis {#fna1}
+***
+
+## Untreated SDBs vs Planktonic cells {.tabset .tabset-pills}
+### Combined analysis {#fna1}
 
 ```{r 3.1-4a1 DGEList}
-targets_a1 <- read.csv("Study_design_a1.csv",header = T, sep = ",", check.names = F)
+a1<- c("PK", "UN")
+targets_a1 <- tibble(targets[targets$Group %in% a1,])
 sampleLabels_a1 <- targets_a1$Sample
 Group_a1 <- targets_a1$Group
 colnames_a1 <- targets_a1$`Colnames for analysis`
@@ -366,10 +374,11 @@ The DGEList object was thus filtered to remove genes with little-to-no count dat
 
 ***
 
-## NCPF8973 {#fna4}
+### NCPF8973 {#fna4}
 
 ```{r 3.1-4a4 DGEList}
-targets_a4 <- read.csv("Study_design_a4.csv",header = T, sep = ",", check.names = F)
+a4<- c("8973")
+targets_a4 <- tibble(targets_a1[targets_a1$Isolate %in% a4,])
 sampleLabels_a4 <- targets_a4$Sample
 Group_a4 <- targets_a4$Group
 colnames_a4 <- targets_a4$`Colnames for analysis`
@@ -392,7 +401,7 @@ colnames(df_log2_cpm_norm_filt_a4) <- c("Name", colnames_a4)
 colnames(log2_cpm_norm_filt_DGEList_a4) <- sampleLabels_a4
 ```
 
-Prior to filtering, the data from PK and SDB samples of NCPF8973 were first examined to see how many genes had little-to-no expression across either all samples or within one group of samples. In the first instance, the number of genes for which the statement "there is no expression data across all twelve samples" was true is demonstrated in the output below.
+Prior to filtering, the data from PK and SDB samples of NCPF8973 were first examined to see how many genes had little-to-no expression across either all samples or within one group of samples. In the first instance, the number of genes for which the statement "there is no expression data across all six samples" was true is demonstrated in the output below.
 ```{r crit1a4}
 table(rowSums(DGEList_a4$counts==0)==6)
 ```
@@ -404,10 +413,11 @@ table(rowSums(DGEList_a4$counts==0)>=3)
 
 The DGEList object was thus filtered to remove genes with little or no count data. Genes for which less than one count per million was found in in at least 6 samples were removed from the data set. Data were then normalised to the library size to account for genes which are typically highly or lowly expressed within cells. Filtering and normalising the count data reduced the number of genes from `r nrow(DGEList_a4)` to `r nrow(filt_DGEList_a4)`.
 
-## NCPF8978 {#fna7}
+### NCPF8978 {#fna7}
 
 ```{r 3.1-4a7 DGEList}
-targets_a7 <- read.csv("Study_design_a7.csv",header = T, sep = ",", check.names = F)
+a7<- c("8978")
+targets_a7 <- tibble(targets_a1[targets_a1$Isolate %in% a7,])
 sampleLabels_a7 <- targets_a7$Sample
 Group_a7 <- targets_a7$Group
 colnames_a7 <- targets_a7$`Colnames for analysis`
@@ -430,7 +440,7 @@ colnames(df_log2_cpm_norm_filt_a7) <- c("Name", colnames_a7)
 colnames(log2_cpm_norm_filt_DGEList_a7) <- sampleLabels_a7
 ```
 
-Prior to filtering, the data from PK and SDB samples of NCPF8978 were first examined to see how many genes had little-to-no expression across either all samples or within one group of samples. In the first instance, the number of genes for which the statement "there is no expression data across all twelve samples" was true is demonstrated in the output below.
+Prior to filtering, the data from PK and SDB samples of NCPF8978 were first examined to see how many genes had little-to-no expression across either all samples or within one group of samples. In the first instance, the number of genes for which the statement "there is no expression data across all six samples" was true is demonstrated in the output below.
 ```{r crit1a7}
 table(rowSums(DGEList_a7$counts==0)==6)
 ```
@@ -442,12 +452,139 @@ table(rowSums(DGEList_a7$counts==0)>=3)
 
 The DGEList object was thus filtered to remove genes with little or no count data. Genes for which less than one count per million was found in in at least 6 samples were removed from the data set. Data were then normalised to the library size to account for genes which are typically highly or lowly expressed within cells. Filtering and normalising the count data reduced the number of genes from `r nrow(DGEList_a7)` to `r nrow(filt_DGEList_a7)`.
 
+## Pre-treated SDBs vs Planktonic cells {.tabset .tabset-pills}
+### Combined analysis {#fna2}
+
+```{r 3.1-4a2 DGEList}
+a2<- c("PK", "TX")
+targets_a2 <- tibble(targets[targets$Group %in% a2,])
+sampleLabels_a2 <- targets_a2$Sample
+Group_a2 <- targets_a2$Group
+colnames_a2 <- targets_a2$`Colnames for analysis`
+
+Counts <- Txi_gene$counts
+Counts_a2 <- Counts[,c(1:6,13:18)]
+
+DGEList_a2 <- DGEList(counts = Counts_a2, group= Group_a2)
+cpm_a2 <- cpm(DGEList_a2)
+
+keepers_a2 <- rowSums(cpm_a2>1)>=6
+
+filt_DGEList_a2 <- DGEList_a2[keepers_a2,]
+filt_log2_cpm_a2 <- cpm(filt_DGEList_a2, log=TRUE)
+
+norm_filt_DGEList_a2 <- calcNormFactors(filt_DGEList_a2, method = "TMM")
+log2_cpm_norm_filt_DGEList_a2 <- cpm(norm_filt_DGEList_a2, log=T)
+df_log2_cpm_norm_filt_a2 <- as_tibble(log2_cpm_norm_filt_DGEList_a2, rownames = "Name")
+colnames(df_log2_cpm_norm_filt_a2) <- c("Name", colnames_a2)
+colnames(log2_cpm_norm_filt_DGEList_a2) <- sampleLabels_a2
+```
+
+Prior to filtering, the combined data were first examined to see how many genes had little to no expression across either all samples or within one group of samples. In the first instance, the number of genes for which the statement "there is no expression data across all twelve samples" was true is demonstrated in the output below.
+```{r crit1a2}
+table(rowSums(DGEList_a2$counts==0)==12)
+```
+
+In the combined isolate analysis the smallest group size for which relevant comparisons could be made was six samples, so the true/false statement above was repeated for at least this number of samples and the results shown below.
+```{r crit2a2} 
+table(rowSums(DGEList_a2$counts==0)>=6)
+```
+
+The DGEList object was thus filtered to remove genes with little-to-no count data. Genes for which less than one count per million was found in in at least 6 samples were removed from the data set. Data were then normalised to the library size to account for genes which are typically highly or lowly expressed within cells. Filtering and normalising the count data reduced the number of genes from `r nrow(DGEList_a2)` to `r nrow(filt_DGEList_a2)`.
+
+***
+
+### NCPF8973 {#fna5}
+
+```{r 3.1-4a5 DGEList}
+a5<- c("8973")
+targets_a5 <- tibble(targets_a2[targets_a2$Isolate %in% a5,])
+sampleLabels_a5 <- targets_a5$Sample
+Group_a5 <- targets_a5$Group
+colnames_a5 <- targets_a5$`Colnames for analysis`
+
+Counts <- Txi_gene$counts
+Counts_a5 <- Counts[,c(1:3,7:9)]
+
+DGEList_a5 <- DGEList(counts = Counts_a5, group= Group_a5)
+cpm_a5 <- cpm(DGEList_a5)
+
+keepers_a5 <- rowSums(cpm_a5>1)>=3
+
+filt_DGEList_a5 <- DGEList_a5[keepers_a5,]
+filt_log2_cpm_a5 <- cpm(filt_DGEList_a5, log=TRUE)
+
+norm_filt_DGEList_a5 <- calcNormFactors(filt_DGEList_a5, method = "TMM")
+log2_cpm_norm_filt_DGEList_a5 <- cpm(norm_filt_DGEList_a5, log=T)
+df_log2_cpm_norm_filt_a5 <- as_tibble(log2_cpm_norm_filt_DGEList_a5, rownames = "Name")
+colnames(df_log2_cpm_norm_filt_a5) <- c("Name", colnames_a5)
+colnames(log2_cpm_norm_filt_DGEList_a5) <- sampleLabels_a5
+```
+
+Prior to filtering, the data from PK and SDB samples of NCPF8973 were first examined to see how many genes had little-to-no expression across either all samples or within one group of samples. In the first instance, the number of genes for which the statement "there is no expression data across all six samples" was true is demonstrated in the output below.
+```{r crit1a5}
+table(rowSums(DGEList_a5$counts==0)==6)
+```
+
+In the single isolate analysis for NCPF8973 the smallest group size for which relevant comparisons could be made was three replicates, so the true/false statement above was repeated for at least this number of samples and the results shown below.
+```{r crit2a5} 
+table(rowSums(DGEList_a5$counts==0)>=3)
+```
+
+The DGEList object was thus filtered to remove genes with little or no count data. Genes for which less than one count per million was found in in at least 6 samples were removed from the data set. Data were then normalised to the library size to account for genes which are typically highly or lowly expressed within cells. Filtering and normalising the count data reduced the number of genes from `r nrow(DGEList_a5)` to `r nrow(filt_DGEList_a5)`.
+
+### NCPF8978 {#fna8}
+
+```{r 3.1-4a8 DGEList}
+a8<- c("8978")
+targets_a8 <- tibble(targets_a2[targets_a2$Isolate %in% a8,])
+sampleLabels_a8 <- targets_a8$Sample
+Group_a8 <- targets_a8$Group
+colnames_a8 <- targets_a8$`Colnames for analysis`
+
+Counts <- Txi_gene$counts
+Counts_a8 <- Counts[,c(4:6,10:12)]
+
+DGEList_a8 <- DGEList(counts = Counts_a8, group= Group_a8)
+cpm_a8 <- cpm(DGEList_a8)
+
+keepers_a8 <- rowSums(cpm_a8>1)>=3
+
+filt_DGEList_a8 <- DGEList_a8[keepers_a8,]
+filt_log2_cpm_a8 <- cpm(filt_DGEList_a8, log=TRUE)
+
+norm_filt_DGEList_a8 <- calcNormFactors(filt_DGEList_a8, method = "TMM")
+log2_cpm_norm_filt_DGEList_a8 <- cpm(norm_filt_DGEList_a8, log=T)
+df_log2_cpm_norm_filt_a8 <- as_tibble(log2_cpm_norm_filt_DGEList_a8, rownames = "Name")
+colnames(df_log2_cpm_norm_filt_a8) <- c("Name", colnames_a8)
+colnames(log2_cpm_norm_filt_DGEList_a8) <- sampleLabels_a8
+```
+
+Prior to filtering, the data from PK and SDB samples of NCPF8978 were first examined to see how many genes had little-to-no expression across either all samples or within one group of samples. In the first instance, the number of genes for which the statement "there is no expression data across all six samples" was true is demonstrated in the output below.
+```{r crit1a8}
+table(rowSums(DGEList_a8$counts==0)==6)
+```
+
+In the single isolate analysis for NCPF8978 the smallest group size for which relevant comparisons could be made was three replicates, so the true/false statement above was repeated for at least this number of samples and the results shown below.
+```{r crit2a8} 
+table(rowSums(DGEList_a8$counts==0)>=3)
+```
+
+The DGEList object was thus filtered to remove genes with little or no count data. Genes for which less than one count per million was found in in at least 6 samples were removed from the data set. Data were then normalised to the library size to account for genes which are typically highly or lowly expressed within cells. Filtering and normalising the count data reduced the number of genes from `r nrow(DGEList_a8)` to `r nrow(filt_DGEList_a8)`.
+
+## Pre-treated vs Untreated SDBs {.tabset .tabset-pills}
+
+
 # Multivariate statistics on biological replicates {#stats .tabset .tabset-pills}
 
 Multivariate analyses were performed on filtered, normalised count data using the base stats package (v4.3.0) from R to assess the similarity of biological replicates and determine significant sources of variance between samples. Two methods were used, hierarchical clustering and principal component analysis.
 
-## Combined analysis {#statsa1}
-### Hierarchical clustering of samples {#h-clusta1}
+***
+
+## Untreated SDBs vs Planktonic cells {.tabset .tabset-pills}
+
+### Combined analysis {#statsa1}
+#### Hierarchical clustering of samples {#h-clusta1}
 
 Samples were compared using an unsupervised hierarchical clustering algorithm to determine whether biological replicates of the same sample had consistent RNA-seq profiles with each other. First, a distance matrix was calculated between samples using log-cpm data and the Maximum Distance algorithm. Samples were clustered using complete agglomeration and the output represented as a dendrogram (**Fig.** **\@ref(fig:hclusta1)**).
 
@@ -476,7 +613,7 @@ Samples clustered first by isolate, then by growth mode, suggesting that gene ex
 
 ***
 
-### Principal component analysis and plots {#pcaa1}
+#### Principal component analysis and plots {#pcaa1}
 
 Principal component analysis (PCA) was used to identify variables which explain the variance between samples. Twelve principal components (PCs) which accounted for the total variance of the dataset, were identified using PCA (**Fig,** **\@ref(fig:screea1)**).
 
@@ -544,8 +681,8 @@ The outputs of both statistical analyses show distinct differences between the s
 
 ***
 
-## NCPF8973 {#statsa4}
-### Hierarchical clustering of samples {#h-clusta4}
+### NCPF8973 {#statsa4}
+#### Hierarchical clustering of samples {#h-clusta4}
 
 Samples from isolate NCPF8973 were further compared in isolation  using an unsupervised hierarchical clustering algorithm to determine whether biological replicates of the same sample had consistent RNA-seq profiles with each other. First, a distance matrix was calculated between samples using log-cpm data and the Maximum Distance algorithm. Samples were clustered using complete agglomeration and the output represented as a dendrogram (**Fig.** **\@ref(fig:hclusta4)**).
 
@@ -574,7 +711,7 @@ Samples clustered by growth mode, as expected. The replicates of samples grouped
 
 ***
 
-### Principal component analysis and plots {#pcaa4}
+#### Principal component analysis and plots {#pcaa4}
 
 Principal component analysis (PCA) was used to identify variables which explain the variance between samples. Twelve principal components (PCs) which accounted for the total variance of the dataset, were identified using PCA (**Fig.** **\@ref(fig:screea4)**).
 
@@ -641,8 +778,8 @@ In this analysis, the first PC accounted for `r pc_per_a4$Variance[1]`% of the v
 ***
 
 
-## NCPF8978 {#statsa7}
-### Hierarchical clustering of samples {#h-clusta7}
+### NCPF8978 {#statsa7}
+#### Hierarchical clustering of samples {#h-clusta7}
 
 Samples were compared using an unsupervised hierarchical clustering algorithm to determine whether biological replicates of the same sample had consistent RNA-seq profiles with each other. First, a distance matrix was calculated between samples using log-cpm data and the Maximum Distance algorithm. Samples were clustered using complete agglomeration and the output represented as a dendrogram (**Fig.** **\@ref(fig:hclusta7)**).
 
@@ -671,7 +808,7 @@ Samples clustered by growth mode, as expected. Replicates of each sample grouped
 
 ***
 
-### Principal component analysis and plots {#pcaa7}
+#### Principal component analysis and plots {#pcaa7}
 
 Principal component analysis (PCA) was used to identify variables which explain the variance between samples. Twelve principal components (PCs) which accounted for the total variance of the dataset, were identified using PCA (**Fig.** **\@ref(fig:screea7)**).
 
@@ -738,6 +875,13 @@ In this analysis, the first PC accounted for `r pc_per_a7$Variance[1]`% of the v
 ***
 
 
+
+## Pre-treated SDBs vs Planktonic cells {.tabset .tabset-pills}
+
+## Pre-treated vs Untreated SDBs {.tabset .tabset-pills}
+
+
+
 # Differential Gene Expression analysis {#DGE-analysis .tabset .tabset-pills}
 
 Differentially-expressed genes between SDB and PK samples from both isolates were identified using the voom algorithm and associated statistical functions from the [Limma package](http://bioinf.wehi.edu.au/limma/). Using this pipeline, the mean-variance trend of the log-cpm data at the gene level is estimated using a non-normal distribution and used to predict the variance for each individual log-cpm value. Predicted variance is then used as a precision weight during linear-modelling of the data to estimate log~2~-adjusted fold changes (logFC) between groups of samples as specified in the study design. Finally, moderated t- and F- statistics, as well as the log-odds of differential expression between two groups are estimated using an empirical Bayes shrinkage method. 
@@ -755,7 +899,7 @@ v_DGEList_filt_norm_a1 <- voom(norm_filt_DGEList_a1, design_a1, plot = FALSE)
 
 fit_a1 <- lmFit(v_DGEList_filt_norm_a1, design_a1)
 
-contrast_matrix_a1 <- makeContrasts(phenotype = SDB - PK,
+contrast_matrix_a1 <- makeContrasts(phenotype = UN - PK,
                                  levels=design_a1)
 
 fits_a1 <- contrasts.fit(fit_a1, contrast_matrix_a1)
@@ -805,7 +949,7 @@ diff_genes_a1 <- v_DGEList_filt_norm_a1$E[results_a1[,1] !=0,]
 colnames(diff_genes_a1) <- colnames_a1
 
 my_diff_genes_a1 <- diff_genes_a1 %>% as_tibble(rownames = "ID")%>% 
-  mutate(SDB_AVG = (SDB01 + SDB02 + SDB03 + SDB04 + SDB05 + SDB06)/6,
+  mutate(SDB_AVG = (UN01 + UN02 + UN03 + UN04 + UN05 + UN06)/6,
          PK_AVG = (PK01 + PK02 + PK03 + PK04 + PK05 + PK06)/6,
          Log2FC = (SDB_AVG - PK_AVG)) %>% 
   mutate_if(is.numeric, round, 2)
@@ -893,7 +1037,7 @@ v_DGEList_filt_norm_a4 <- voom(norm_filt_DGEList_a4, design_a4, plot = FALSE)
 
 fit_a4 <- lmFit(v_DGEList_filt_norm_a4, design_a4)
 
-contrast_matrix_a4 <- makeContrasts(phenotype = SDB - PK,
+contrast_matrix_a4 <- makeContrasts(phenotype = UN - PK,
                                  levels=design_a4)
 
 fits_a4 <- contrasts.fit(fit_a4, contrast_matrix_a4)
@@ -930,7 +1074,7 @@ diff_genes_a4 <- v_DGEList_filt_norm_a4$E[results_a4[,1] !=0,]
 colnames(diff_genes_a4) <- colnames_a4
 
 my_diff_genes_a4 <- diff_genes_a4 %>% as_tibble(rownames = "ID")%>% 
-  mutate(SDB_AVG = (SDB01 + SDB02 + SDB03)/3,
+  mutate(SDB_AVG = (UN01 + UN02 + UN03)/3,
          PK_AVG = (PK01 + PK02 + PK03)/3,
          Log2FC = (SDB_AVG - PK_AVG)) %>% 
   mutate_if(is.numeric, round, 2)
@@ -1017,7 +1161,7 @@ v_DGEList_filt_norm_a7 <- voom(norm_filt_DGEList_a7, design_a7, plot = FALSE)
 
 fit_a7 <- lmFit(v_DGEList_filt_norm_a7, design_a7)
 
-contrast_matrix_a7 <- makeContrasts(phenotype = SDB - PK,
+contrast_matrix_a7 <- makeContrasts(phenotype = UN - PK,
                                  levels=design_a7)
 
 fits_a7 <- contrasts.fit(fit_a7, contrast_matrix_a7)
@@ -1054,7 +1198,7 @@ diff_genes_a7 <- v_DGEList_filt_norm_a7$E[results_a7[,1] !=0,]
 colnames(diff_genes_a7) <- colnames_a7
 
 my_diff_genes_a7 <- diff_genes_a7 %>% as_tibble(rownames = "ID")%>% 
-  mutate(SDB_AVG = (SDB04 + SDB05 + SDB06)/3,
+  mutate(SDB_AVG = (UN04 + UN05 + UN06)/3,
          PK_AVG = (PK04 + PK05 + PK06)/3,
          Log2FC = (SDB_AVG - PK_AVG)) %>% 
   mutate_if(is.numeric, round, 2)
