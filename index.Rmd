@@ -89,15 +89,21 @@ The bioinformatics analysis herein used mRNA-sequencing (RNA-seq) and transcript
 
 ## Sample preparation {#samples}
 
-Two _C. auris_ isolates, NCPF8973 and NCPF8978, which are examples of the single-celled and aggregating growth phenotypes, respectively, were used in this study. For biofilm samples, overnight cultures grown in YPD broth were washed in PBS and standardised to 1x10$^6$ cells/mL in RPMI-1640 medium supplemented with 5% (v/v) foetal calf serum to replicate biological soiling. Cells were seeded into 6-well microtitre plates for growth as biofilms. Semi-dry biofilms (SDB) were grown for three cycles according to the protocol shown in **Fig.** **\@ref(fig:Samples)**, consisting of culture for 48 hr with growth medium ("hydrated" phase) followed by 48 hr without growth medium ("dry" phase), repeated a total of three times. Plates were incubated at room temperature at all times. Cells were harvested by scraping biomass from the wells of the microtitre plate.
+Two _C. auris_ isolates, NCPF8973 and NCPF8978, which are examples of the single-celled and aggregating growth phenotypes, respectively, were used in this study. Planktonic samples were grown overnight in YPD broth, washed in PBS and a total of 5x10$^8$ cells were harvested by centrifugation. Total RNA from planktonic and SDB samples was extracted and purified using the RiboPure Yeast RNA Extraction kit (Invitrogen, Vilnius, Lithuania). Three replicates of each isolate and growth mode were used in this study.
+
+For untreated biofilm samples, overnight cultures grown in YPD broth were washed in PBS and standardised to 1x10$^6$ cells/mL in RPMI-1640 medium supplemented with 5% (v/v) foetal calf serum to replicate biological soiling. Cells were seeded into 6-well microtitre plates for growth as biofilms. Semi-dry biofilms (SDB) were grown for three cycles according to the protocol shown in **Fig.** **\@ref(fig:Samples)**, consisting of culture for 48 hr with growth medium ("hydrated" phase) followed by 48 hr without growth medium ("dry" phase), repeated a total of three times. Plates were incubated at room temperature at all times. Cells were harvested by scraping biomass from the wells of the microtitre plate.
 
 ```{r Samples, fig.cap='**Laboratory protocol for growth of semi-dry biofilms**', fig.align='left', out.width='100%'}
 knitr::include_graphics('01_Semi-dry biofilm_Development.png')
 ```
 
-<font size='2' color='#317EAC'> Red lines indicate the beginning of each wet phaseand brown lines  the beginning of each dry phase; blue dashed lines indicate the end of each cycle. Figure created using [Biorender](https://www.biorender.com/). </font>  
+<font size='2' color='#317EAC'> Red lines indicate the beginning of each wet phase, and brown lines  the beginning of each dry phase; blue dashed lines indicate the end of each cycle. Figure created using [Biorender](https://www.biorender.com/). </font>  
 
-Planktonic samples were grown overnight in YPD broth, washed in PBS and a total of 5x10$^8$ cells were harvested by centrifugation. Total RNA from planktonic and SDB samples was extracted and purified using the RiboPure Yeast RNA Extraction kit (Invitrogen, Vilnius, Lithuania). Three replicates of each isolate and growth mode were used in this study. 
+For pre-treated biofilms, planktonic cells standardised to 2 x 10$^6$ cells/mL in RPMI/FCS were treated with an equal volume of 1000 ppm NaOCl for 1 min, after which the disinfectant was neutralised for 15 min with 5% (w/v) sodium thiosulfate solution (**Fig.** **\@ref(fig:NaOCl)**). Surviving cells were recovered by centrifugation at 3000 rpm for 10 min and the resultant pellet resuspended in RPMI/FCS. Biofilms were grown and harvested as described above. 
+
+``` {r NaOCl, fig.cap='**NaOCl treatment of planktonic cells**', fig.align='left', out.width='40%'}
+knitr::include_graphics('01_NaOCl_disinfect.png')
+```
 
 ***
 
@@ -153,7 +159,7 @@ Given the recent emergence of _C. auris_, much of the 5584 genomic features iden
 
 These files were merged together to create an annotation file where any common names missing from the _C. albicans_ orthologues were copied from available _S. cerevisiae_ orthologues, and the _C. auris_ gene ID was retained for any transcripts for which a common name was not available, as shown in **Table** **\@ref(tab:Annotations)**.
 
-```{r Annotations}
+````{r Annotations}
 geneID <- "B9J08"
 gff <- read.delim(file="C_auris_B8441_current_features.gff", comment.char = "#", header = F)
 colnames(gff) <- c("seqname", "source", "feature", "start", "end", "score", "strand", "frame", "attribute")
@@ -218,7 +224,7 @@ Tx_map <- Tx_map[-c(5582:5584),]
 
 knitr::kable(
   Tx_map[c(6:11),], booktabs=TRUE, caption= "**Sample gene annotation data containing available common names**")
-```
+````
 
 ````{r step 2.2B Annotations, eval=TRUE, include=FALSE}
 # Add in manual entries for genes as necessary!
@@ -300,9 +306,8 @@ Tx_map$ID_Name[964]<- "FKS1"
 Tx_map$ID_Name[1020]<- "FKS2"
 Tx_map$ID_Name[813]<- "BBH2"
 Tx_map$ID_Name[1877]<- "TRM7"
+Tx_map <- rbind(Tx_map, c("B9J08_001310", "B9J08_001310"), c("B9J08_003062", "B9J08_003062"), c("B9J08_005549", "B9J08_005549")) %>% dplyr::arrange(ID)
 ````
-
-
 
 The annotation file constructed for this analysis contains information for  `r nrow(Tx_map)` genes, of which there are `r sum(grepl(geneID, Tx_map$ID_Name, fixed=TRUE))` genes without a common name.
 
@@ -573,9 +578,127 @@ table(rowSums(DGEList_a8$counts==0)>=3)
 The DGEList object was thus filtered to remove genes with little or no count data. Genes for which less than one count per million was found in in at least 6 samples were removed from the data set. Data were then normalised to the library size to account for genes which are typically highly or lowly expressed within cells. Filtering and normalising the count data reduced the number of genes from `r nrow(DGEList_a8)` to `r nrow(filt_DGEList_a8)`.
 
 ## Pre-treated vs Untreated SDBs {.tabset .tabset-pills}
+### Combined analysis {#fna3}
+
+```{r 3.1-4a3 DGEList}
+a3<- c("UN", "TX")
+targets_a3 <- tibble(targets[targets$Group %in% a3,])
+sampleLabels_a3 <- targets_a3$Sample
+Group_a3 <- targets_a3$Group
+colnames_a3 <- targets_a3$`Colnames for analysis`
+
+Counts <- Txi_gene$counts
+Counts_a3 <- Counts[,7:18]
+
+DGEList_a3 <- DGEList(counts = Counts_a3, group= Group_a3)
+cpm_a3 <- cpm(DGEList_a3)
+
+keepers_a3 <- rowSums(cpm_a3>1)>=6
+
+filt_DGEList_a3 <- DGEList_a3[keepers_a3,]
+filt_log2_cpm_a3 <- cpm(filt_DGEList_a3, log=TRUE)
+
+norm_filt_DGEList_a3 <- calcNormFactors(filt_DGEList_a3, method = "TMM")
+log2_cpm_norm_filt_DGEList_a3 <- cpm(norm_filt_DGEList_a3, log=T)
+df_log2_cpm_norm_filt_a3 <- as_tibble(log2_cpm_norm_filt_DGEList_a3, rownames = "Name")
+colnames(df_log2_cpm_norm_filt_a3) <- c("Name", colnames_a3)
+colnames(log2_cpm_norm_filt_DGEList_a3) <- sampleLabels_a3
+```
+
+Prior to filtering, the combined data were first examined to see how many genes had little to no expression across either all samples or within one group of samples. In the first instance, the number of genes for which the statement "there is no expression data across all twelve samples" was true is demonstrated in the output below.
+```{r crit1a3}
+table(rowSums(DGEList_a3$counts==0)==12)
+```
+
+In the combined isolate analysis the smallest group size for which relevant comparisons could be made was six samples, so the true/false statement above was repeated for at least this number of samples and the results shown below.
+```{r crit2a3} 
+table(rowSums(DGEList_a3$counts==0)>=6)
+```
+
+The DGEList object was thus filtered to remove genes with little-to-no count data. Genes for which less than one count per million was found in in at least 6 samples were removed from the data set. Data were then normalised to the library size to account for genes which are typically highly or lowly expressed within cells. Filtering and normalising the count data reduced the number of genes from `r nrow(DGEList_a3)` to `r nrow(filt_DGEList_a3)`.
+
+***
+
+### NCPF8973 {#fna6}
+
+```{r 3.1-4a6 DGEList}
+a6<- c("8973")
+targets_a6 <- tibble(targets_a3[targets_a3$Isolate %in% a6,])
+sampleLabels_a6 <- targets_a6$Sample
+Group_a6 <- targets_a6$Group
+colnames_a6 <- targets_a6$`Colnames for analysis`
+
+Counts <- Txi_gene$counts
+Counts_a6 <- Counts[,c(7:9,13:15)]
+
+DGEList_a6 <- DGEList(counts = Counts_a6, group= Group_a6)
+cpm_a6 <- cpm(DGEList_a6)
+
+keepers_a6 <- rowSums(cpm_a6>1)>=3
+
+filt_DGEList_a6 <- DGEList_a6[keepers_a6,]
+filt_log2_cpm_a6 <- cpm(filt_DGEList_a6, log=TRUE)
+
+norm_filt_DGEList_a6 <- calcNormFactors(filt_DGEList_a6, method = "TMM")
+log2_cpm_norm_filt_DGEList_a6 <- cpm(norm_filt_DGEList_a6, log=T)
+df_log2_cpm_norm_filt_a6 <- as_tibble(log2_cpm_norm_filt_DGEList_a6, rownames = "Name")
+colnames(df_log2_cpm_norm_filt_a6) <- c("Name", colnames_a6)
+colnames(log2_cpm_norm_filt_DGEList_a6) <- sampleLabels_a6
+```
+
+Prior to filtering, the data from PK and SDB samples of NCPF8973 were first examined to see how many genes had little-to-no expression across either all samples or within one group of samples. In the first instance, the number of genes for which the statement "there is no expression data across all six samples" was true is demonstrated in the output below.
+```{r crit1a6}
+table(rowSums(DGEList_a6$counts==0)==6)
+```
+
+In the single isolate analysis for NCPF8973 the smallest group size for which relevant comparisons could be made was three replicates, so the true/false statement above was repeated for at least this number of samples and the results shown below.
+```{r crit2a6} 
+table(rowSums(DGEList_a6$counts==0)>=3)
+```
+
+The DGEList object was thus filtered to remove genes with little or no count data. Genes for which less than one count per million was found in in at least 6 samples were removed from the data set. Data were then normalised to the library size to account for genes which are typically highly or lowly expressed within cells. Filtering and normalising the count data reduced the number of genes from `r nrow(DGEList_a6)` to `r nrow(filt_DGEList_a6)`.
+
+### NCPF8978 {#fna9}
+
+```{r 3.1-4a9 DGEList}
+a9<- c("8978")
+targets_a9 <- tibble(targets_a3[targets_a3$Isolate %in% a9,])
+sampleLabels_a9 <- targets_a9$Sample
+Group_a9 <- targets_a9$Group
+colnames_a9 <- targets_a9$`Colnames for analysis`
+
+Counts <- Txi_gene$counts
+Counts_a9 <- Counts[,c(10:12,16:18)]
+
+DGEList_a9 <- DGEList(counts = Counts_a9, group= Group_a9)
+cpm_a9 <- cpm(DGEList_a9)
+
+keepers_a9 <- rowSums(cpm_a9>1)>=3
+
+filt_DGEList_a9 <- DGEList_a9[keepers_a9,]
+filt_log2_cpm_a9 <- cpm(filt_DGEList_a9, log=TRUE)
+
+norm_filt_DGEList_a9 <- calcNormFactors(filt_DGEList_a9, method = "TMM")
+log2_cpm_norm_filt_DGEList_a9 <- cpm(norm_filt_DGEList_a9, log=T)
+df_log2_cpm_norm_filt_a9 <- as_tibble(log2_cpm_norm_filt_DGEList_a9, rownames = "Name")
+colnames(df_log2_cpm_norm_filt_a9) <- c("Name", colnames_a9)
+colnames(log2_cpm_norm_filt_DGEList_a9) <- sampleLabels_a9
+```
+
+Prior to filtering, the data from PK and SDB samples of NCPF8978 were first examined to see how many genes had little-to-no expression across either all samples or within one group of samples. In the first instance, the number of genes for which the statement "there is no expression data across all six samples" was true is demonstrated in the output below.
+```{r crit1a9}
+table(rowSums(DGEList_a9$counts==0)==6)
+```
+
+In the single isolate analysis for NCPF8978 the smallest group size for which relevant comparisons could be made was three replicates, so the true/false statement above was repeated for at least this number of samples and the results shown below.
+```{r crit2a9} 
+table(rowSums(DGEList_a9$counts==0)>=3)
+```
+
+The DGEList object was thus filtered to remove genes with little or no count data. Genes for which less than one count per million was found in in at least 6 samples were removed from the data set. Data were then normalised to the library size to account for genes which are typically highly or lowly expressed within cells. Filtering and normalising the count data reduced the number of genes from `r nrow(DGEList_a9)` to `r nrow(filt_DGEList_a9)`.
 
 
-# Multivariate statistics on biological replicates {#stats .tabset .tabset-pills}
+# Multivariate statistics {#stats .tabset .tabset-pills}
 
 Multivariate analyses were performed on filtered, normalised count data using the base stats package (v4.3.0) from R to assess the similarity of biological replicates and determine significant sources of variance between samples. Two methods were used, hierarchical clustering and principal component analysis.
 
@@ -654,7 +777,7 @@ Sample <- sampleLabels_a1
 pca_plot_1_a1<- ggplot(df_pca_results_a1,
                        aes(x=PC1, y=PC2, label=Sample, colour=`Growth mode`, shape=Phenotype)) +
   geom_point(size=8, alpha=0.6)+
-  scale_colour_manual(values=c("Planktonic"="#2596be", "Biofilm"="#eb4034"))+ ##add custom colour scale for values
+  scale_colour_manual(values=c("Planktonic"="#2596be", "Untreated biofilm"="#eb4034"))+ ##add custom colour scale for values
   xlab(paste0("PC1 (",pc_per_a1[1,1],"%",")"))+
   ylab(paste0("PC2 (",pc_per_a1[2,1],"%",")"))+
   labs(col="Growth mode &", shape="phenotype",
@@ -675,7 +798,7 @@ int_pc1_pc2
 
 <font size='2' color='#317EAC'> The first two PCs were plotted against each other, showing the percentage of the total variance accounted for by each PC. Samples are coded by colour for growth mode, and shape for phenotype of isolate, where NCPF8973 is single-celled and NCPF8978 is aggregating. </font>
 
-In this analysis, the first PC accounted for `r pc_per_a1$Variance[1]`% of the variance and was likely the growth mode, as planktonic samples clustered to the left and biofilm to the right of the plot. The second PC, which accounted for a further `r pc_per_a1$Variance[2]`% of the variance, was likely isolate and/or cellular phenotype, as samples clustered by single-celled or aggregating isolates.
+In this analysis, the first PC accounted for `r pc_per_a1$Variance[1]`% of the variance and was likely the growth mode, as planktonic samples clustered to the left and biofilm samples to the right of the plot. The second PC, which accounted for a further `r pc_per_a1$Variance[2]`% of the variance, was likely isolate and/or cellular phenotype, as samples clustered by single-celled or aggregating isolates.
 
 The outputs of both statistical analyses show distinct differences between the semi-dry biofilm and planktonic samples, and likely also isolate-specific trends which can be investigated in a further sub-analysis by isolate.
 
@@ -752,7 +875,7 @@ Sample <- sampleLabels_a4
 pca_plot_1_a4<- ggplot(df_pca_results_a4,
                        aes(x=PC1, y=PC2, label=Sample, colour=`Growth mode`))+
   geom_point(size=8, alpha=0.6)+
-  scale_colour_manual(values=c("Planktonic"="#2596be", "Biofilm"="#eb4034"))+ ##add custom colour scale for values
+  scale_colour_manual(values=c("Planktonic"="#2596be", "Untreated biofilm"="#eb4034"))+ ##add custom colour scale for values
   xlab(paste0("PC1 (",pc_per_a4[1,1],"%",")"))+
   ylab(paste0("PC2 (",pc_per_a4[2,1],"%",")"))+
   labs(col="Growth mode &", shape="phenotype",
@@ -849,7 +972,7 @@ Sample <- sampleLabels_a7
 pca_plot_1_a7<- ggplot(df_pca_results_a7,
                        aes(x=PC1, y=PC2, label=Sample, colour=`Growth mode`, shape=Phenotype)) +
   geom_point(size=8, alpha=0.6)+
-  scale_colour_manual(values=c("Planktonic"="#2596be", "Biofilm"="#eb4034"))+ ##add custom colour scale for values
+  scale_colour_manual(values=c("Planktonic"="#2596be", "Untreated biofilm"="#eb4034"))+ ##add custom colour scale for values
   xlab(paste0("PC1 (",pc_per_a7[1,1],"%",")"))+
   ylab(paste0("PC2 (",pc_per_a7[2,1],"%",")"))+
   labs(col="Growth mode &", shape="phenotype",
@@ -878,18 +1001,598 @@ In this analysis, the first PC accounted for `r pc_per_a7$Variance[1]`% of the v
 
 ## Pre-treated SDBs vs Planktonic cells {.tabset .tabset-pills}
 
+### Combined analysis {#statsa2}
+#### Hierarchical clustering of samples {#h-clusta2}
+
+Samples were compared using an unsupervised hierarchical clustering algorithm to determine whether biological replicates of the same sample had consistent RNA-seq profiles with each other. First, a distance matrix was calculated between samples using log-cpm data and the Maximum Distance algorithm. Samples were clustered using complete agglomeration and the output represented as a dendrogram (**Fig.** **\@ref(fig:hclusta2)**).
+
+```{r hclusta2,  fig.cap= "**Hierarchical clustering of samples reveals isolate-specific patterns of gene expression**", out.width="70%"}
+group_a2 <- factor(targets_a2$Group) ##abbreviated version of group name for samples
+growth_a2 <- factor(targets_a2$`Full group`) ##extended version of group name, for labelling plots, etc
+phenotype_a2 <- factor(targets_a2$`Cellular Phenotype`) ##growth phenotype of isolate
+
+colnames(log2_cpm_norm_filt_DGEList_a2) <- sampleLabels_a2
+distance_a2 <- dist(t(log2_cpm_norm_filt_DGEList_a2), method = "maximum")
+clusters_a2 <- hclust(distance_a2, method = "complete")
+a2_dendro <- ggdendrogram(clusters_a2, rotate= FALSE, labels = TRUE)+
+  ylab("Distance")+
+  theme_classic()+
+  theme(axis.line.x = element_blank(),
+        axis.ticks.x=element_blank(),
+        axis.text.x = element_text(angle=90, size=14),
+        axis.text.y = element_text(size=12),
+        axis.title.x = element_blank(),
+        axis.title.y = element_text(angle=90, size=12, margin=margin(t=0,r=15,b=0,l=0)))
+a2_dendro
+```
+<font size='2' color='#317EAC'> Log<sub>2</sub>-transformed expression data from semi-dry biofilms (SDB) and planktonic (PK) cells were compared using unsupervised statistical analyses to examine patterns of expression between samples. Hierarchical clustering based on expression across all genes, was visualised as a dendrogram showing relative distance or similarity between samples.</font>
+
+Samples clustered first by isolate, then by growth mode, suggesting that gene expression patterns might be highly isolate-specific. Furthermore, the replicates of each sample grouped quite closely, suggesting consistent RNA-seq profiles across the three independent experiments as denoted by _01, _02 and _03 at the end of each sample name.
+
+***
+
+#### Principal component analysis and plots {#pcaa2}
+
+Principal component analysis (PCA) was used to identify variables which explain the variance between samples. Twelve principal components (PCs) which accounted for the total variance of the dataset, were identified using PCA (**Fig,** **\@ref(fig:screea2)**).
+
+```{r screea2, fig.cap="**Screeplot of principal components, and their respective and cumulative variance**", out.width="65%"}
+pca_result_a2 <- prcomp(t(log2_cpm_norm_filt_DGEList_a2), scale.=F, retx=T)
+pc_variance_a2 <-pca_result_a2$sdev^2 
+pc_per_a2<-tibble(round(pc_variance_a2/sum(pc_variance_a2)*100, 1))
+colnames(pc_per_a2) <-"Variance"
+pc_per_a2 <- pc_per_a2 %>% dplyr::mutate("Cumulative variance"= cumsum(Variance),
+                                         "cv_col"="#FFC300",
+                                         "Principal component"= seq(1:12),
+                                         "pc_col"="#87CEEB")
+
+df_pca_results_a2 <-as_tibble(pca_result_a2$x)
+
+scree_a2 <- ggplot(pc_per_a2) +
+  geom_col(aes(y=Variance,x=`Principal component`, fill=factor(`Principal component`)))+
+  scale_fill_manual(values=c(pc_per_a2$pc_col))+
+  geom_line(aes(x=`Principal component`, y=`Cumulative variance`, colour=cv_col))+
+  geom_point(aes(x=`Principal component`, y=`Cumulative variance`, colour=cv_col), size=1)+
+  scale_colour_manual(values=c("#FFC300"="#FFC300"))+
+  geom_hline(yintercept=80, linetype=2)+
+  scale_x_continuous(breaks=seq(1:12))+
+  scale_y_continuous(name="Variance (%)",breaks=seq(from=0, to=100,by=10))+
+  theme_classic()+
+  theme(legend.position ="none")
+scree_a2
+```
+
+<font size='2' color='#317EAC'> Principal component (PC) analysis was performed to identify major sources of variability between samples. The respective variance accounted for by each PC was shown as blue bars on the scree plot, with the cumulative variance as a yellow line. </font>
+
+The first 2 PCs accounted for `r pc_per_a2$"Cumulative variance"[2]` of the variance and were subsequently plotted against each other to identify which of the known variables these may represent (**Fig.** **\@ref(fig:PCAa2)**).
+
+```{r PCAa2, fig.cap="**Principal components 1 and 2 show gene expression in planktonic and semi-dry biofilms is specific to isolate and growth mode**"}
+`Growth mode` <- growth_a2
+Phenotype <- phenotype_a2
+Sample <- sampleLabels_a2
+pca_plot_1_a2<- ggplot(df_pca_results_a2,
+                       aes(x=PC1, y=PC2, label=Sample, colour=`Growth mode`, shape=Phenotype)) +
+  geom_point(size=8, alpha=0.6)+
+  scale_colour_manual(values=c("Planktonic"="#2596be", "Pre-treated biofilm"="#96be25"))+ ##add custom colour scale for values
+  xlab(paste0("PC1 (",pc_per_a2[1,1],"%",")"))+
+  ylab(paste0("PC2 (",pc_per_a2[2,1],"%",")"))+
+  labs(col="Growth mode &", shape="phenotype",
+       ) +
+  coord_fixed()+
+  theme_bw()+
+  theme(legend.position = "bottom", #adds legend to the bottom of the figure
+        legend.box = "vertical", #causes the legend to sit as 2 rows within a "box" element
+        legend.margin = margin(t=0,r=0,b=0,l=0),
+        legend.text =element_text(size=14),
+        legend.title=element_text(size=14),
+        plot.margin=margin(t=5,r=0,b=0,l=0),
+        axis.title = element_text(size=14),
+        axis.text = element_text(size=14))
+int_pc1_pc2 <- ggplotly(pca_plot_1_a2)
+int_pc1_pc2
+```
+
+<font size='2' color='#317EAC'> The first two PCs were plotted against each other, showing the percentage of the total variance accounted for by each PC. Samples are coded by colour for growth mode, and shape for phenotype of isolate, where NCPF8973 is single-celled and NCPF8978 is aggregating. </font>
+
+In this analysis, the first PC accounted for `r pc_per_a2$Variance[1]`% of the variance and was likely the growth mode, as planktonic samples clustered to the left and biofilm to the right of the plot. The second PC, which accounted for a further `r pc_per_a2$Variance[2]`% of the variance, was likely isolate and/or cellular phenotype, as samples clustered by single-celled or aggregating isolates.
+
+The outputs of both statistical analyses show distinct differences between the pre-treated SDB and planktonic samples, and likely also isolate-specific trends which can be investigated in a further sub-analysis by isolate.
+
+***
+
+### NCPF8973 {#statsa5}
+#### Hierarchical clustering of samples {#h-clusta5}
+
+Samples from isolate NCPF8973 were further compared in isolation  using an unsupervised hierarchical clustering algorithm to determine whether biological replicates of the same sample had consistent RNA-seq profiles with each other. First, a distance matrix was calculated between samples using log-cpm data and the Maximum Distance algorithm. Samples were clustered using complete agglomeration and the output represented as a dendrogram (**Fig.** **\@ref(fig:hclusta5)**).
+
+```{r hclusta5,  fig.cap= "**Hierarchical clustering of NCPF8973 samples**", out.width="70%"}
+group_a5 <- factor(targets_a5$Group) ##abbreviated version of group name for samples
+growth_a5 <- factor(targets_a5$`Full group`) ##extended version of group name, for labelling plots, etc
+phenotype_a5 <- factor(targets_a5$`Cellular Phenotype`) ##growth phenotype of isolate
+
+colnames(log2_cpm_norm_filt_DGEList_a5) <- sampleLabels_a5
+distance_a5 <- dist(t(log2_cpm_norm_filt_DGEList_a5), method = "maximum")
+clusters_a5 <- hclust(distance_a5, method = "complete")
+a5_dendro <- ggdendrogram(clusters_a5, rotate= FALSE, labels = TRUE)+
+  ylab("Distance")+
+  theme_classic()+
+  theme(axis.line.x = element_blank(),
+        axis.ticks.x=element_blank(),
+        axis.text.x = element_text(angle=90, size=14),
+        axis.text.y = element_text(size=12),
+        axis.title.x = element_blank(),
+        axis.title.y = element_text(angle=90, size=12, margin=margin(t=0,r=15,b=0,l=0)))
+a5_dendro
+```
+<font size='2' color='#317EAC'> Log<sub>2</sub>-transformed expression data from semi-dry biofilms (SDB) and planktonic (PK) cells were compared using unsupervised statistical analyses to examine patterns of expression between samples. Hierarchical clustering based on expression across all genes, was visualised as a dendrogram showing relative distance or similarity between samples.</font>
+
+Samples clustered by growth mode, as expected. The replicates of samples grouped quite closely, suggesting consistent RNA-seq profiles across the three independent experiments as denoted by _01, _02 and _03 at the end of each sample name.
+
+***
+
+#### Principal component analysis and plots {#pcaa5}
+
+Principal component analysis (PCA) was used to identify variables which explain the variance between samples. Twelve principal components (PCs) which accounted for the total variance of the dataset, were identified using PCA (**Fig.** **\@ref(fig:screea5)**).
+
+```{r screea5, fig.cap="**Screeplot of principal components, and their respective and cumulative variance**", out.width="65%"}
+pca_result_a5 <- prcomp(t(log2_cpm_norm_filt_DGEList_a5), scale.=F, retx=T)
+pc_variance_a5 <-pca_result_a5$sdev^2 
+pc_per_a5<-tibble(round(pc_variance_a5/sum(pc_variance_a5)*100, 1))
+colnames(pc_per_a5) <-"Variance"
+pc_per_a5 <- pc_per_a5 %>% dplyr::mutate("Cumulative variance"= cumsum(Variance),
+                                         "cv_col"="#FFC300",
+                                         "Principal component"= seq(1:6),
+                                         "pc_col"="#87CEEB")
+
+df_pca_results_a5 <-as_tibble(pca_result_a5$x)
+
+scree_a5 <- ggplot(pc_per_a5) +
+  geom_col(aes(y=Variance,x=`Principal component`, fill=factor(`Principal component`)))+
+  scale_fill_manual(values=c(pc_per_a5$pc_col))+
+  geom_line(aes(x=`Principal component`, y=`Cumulative variance`, colour=cv_col))+
+  geom_point(aes(x=`Principal component`, y=`Cumulative variance`, colour=cv_col), size=1)+
+  scale_colour_manual(values=c("#FFC300"="#FFC300"))+
+  geom_hline(yintercept=80, linetype=2)+
+  scale_x_continuous(breaks=seq(1:6))+
+  scale_y_continuous(name="Variance (%)",breaks=seq(from=0, to=100,by=10))+
+  theme_classic()+
+  theme(legend.position ="none")
+scree_a5
+```
+
+<font size='2' color='#317EAC'> Principal component (PC) analysis was performed to identify major sources of variability between samples. The respective variance accounted for by each PC was shown as blue bars on the scree plot, with the cumulative variance as a yellow line. </font>
+
+The first 2 PCs accounted for `r pc_per_a5$"Cumulative variance"[2]` of the variance and were subsequently plotted against each other to identify which of the known variables these may represent (**Fig.** **\@ref(fig:PCAa5)**).
+
+```{r PCAa5, fig.cap="**Principal components 1 and 2 show gene expression in planktonic and semi-dry biofilms is specific to growth mode**"}
+`Growth mode` <- growth_a5
+Phenotype <- phenotype_a5
+Sample <- sampleLabels_a5
+pca_plot_1_a5<- ggplot(df_pca_results_a5,
+                       aes(x=PC1, y=PC2, label=Sample, colour=`Growth mode`))+
+  geom_point(size=8, alpha=0.6)+
+  scale_colour_manual(values=c("Planktonic"="#2596be", "Pre-treated biofilm"="#96be25"))+ ##add custom colour scale for values
+  xlab(paste0("PC1 (",pc_per_a5[1,1],"%",")"))+
+  ylab(paste0("PC2 (",pc_per_a5[2,1],"%",")"))+
+  labs(col="Growth mode &", shape="phenotype",
+       ) +
+  coord_fixed()+
+  theme_bw()+
+  theme(legend.position = "bottom", #adds legend to the bottom of the figure
+        legend.box = "vertical", #causes the legend to sit as 2 rows within a "box" element
+        legend.margin = margin(t=0,r=0,b=0,l=0),
+        legend.text =element_text(size=14),
+        legend.title=element_text(size=14),
+        plot.margin=margin(t=5,r=0,b=0,l=0),
+        axis.title = element_text(size=14),
+        axis.text = element_text(size=14))
+int_pc1_pc2 <- ggplotly(pca_plot_1_a5)
+int_pc1_pc2
+```
+
+<font size='2' color='#317EAC'> The first two PCs were plotted against each other, showing the percentage of the total variance accounted for by each PC. Samples are coded by colour for growth mode. </font>
+
+In this analysis, the first PC accounted for `r pc_per_a5$Variance[1]`% of the variance and was likely the growth mode, as planktonic samples clustered to the left and biofilm to the right of the plot. The second PC, which accounted for a further `r pc_per_a5$Variance[2]`% of the variance, was likely the experiment number, as replicates _01 grouped towards the top of the axis, and _03 towards the bottom.
+
+***
+
+
+### NCPF8978 {#statsa8}
+#### Hierarchical clustering of samples {#h-clusta8}
+
+Samples were compared using an unsupervised hierarchical clustering algorithm to determine whether biological replicates of the same sample had consistent RNA-seq profiles with each other. First, a distance matrix was calculated between samples using log-cpm data and the Maximum Distance algorithm. Samples were clustered using complete agglomeration and the output represented as a dendrogram (**Fig.** **\@ref(fig:hclusta8)**).
+
+```{r hclusta8,  fig.cap= "**Hierarchical clustering of samples**", out.width="70%"}
+group_a8 <- factor(targets_a8$Group) ##abbreviated version of group name for samples
+growth_a8 <- factor(targets_a8$`Full group`) ##extended version of group name, for labelling plots, etc
+phenotype_a8 <- factor(targets_a8$`Cellular Phenotype`) ##growth phenotype of isolate
+
+colnames(log2_cpm_norm_filt_DGEList_a8) <- sampleLabels_a8
+distance_a8 <- dist(t(log2_cpm_norm_filt_DGEList_a8), method = "maximum")
+clusters_a8 <- hclust(distance_a8, method = "complete")
+a8_dendro <- ggdendrogram(clusters_a8, rotate= FALSE, labels = TRUE)+
+  ylab("Distance")+
+  theme_classic()+
+  theme(axis.line.x = element_blank(),
+        axis.ticks.x=element_blank(),
+        axis.text.x = element_text(angle=90, size=14),
+        axis.text.y = element_text(size=12),
+        axis.title.x = element_blank(),
+        axis.title.y = element_text(angle=90, size=12, margin=margin(t=0,r=15,b=0,l=0)))
+a8_dendro
+```
+<font size='2' color='#317EAC'> Log<sub>2</sub>-transformed expression data from NCPF8978 grown as semi-dry biofilms (SDB) and planktonic (PK) cells were compared using unsupervised statistical analyses to examine patterns of expression between samples. Hierarchical clustering based on expression across all genes, was visualised as a dendrogram showing relative distance or similarity between samples.</font>
+
+Samples clustered by growth mode, as expected. Replicates of each sample grouped quite closely, suggesting consistent RNA-seq profiles across the three independent experiments as denoted by _01, _02 and _03 at the end of each sample name.
+
+***
+
+#### Principal component analysis and plots {#pcaa8}
+
+Principal component analysis (PCA) was used to identify variables which explain the variance between samples. Twelve principal components (PCs) which accounted for the total variance of the dataset, were identified using PCA (**Fig.** **\@ref(fig:screea8)**).
+
+```{r screea8, fig.cap="**Screeplot of principal components, and their respective and cumulative variance**", out.width="65%"}
+pca_result_a8 <- prcomp(t(log2_cpm_norm_filt_DGEList_a8), scale.=F, retx=T)
+pc_variance_a8 <-pca_result_a8$sdev^2 
+pc_per_a8<-tibble(round(pc_variance_a8/sum(pc_variance_a8)*100, 1))
+colnames(pc_per_a8) <-"Variance"
+pc_per_a8 <- pc_per_a8 %>% dplyr::mutate("Cumulative variance"= cumsum(Variance),
+                                         "cv_col"="#FFC300",
+                                         "Principal component"= seq(1:6),
+                                         "pc_col"="#87CEEB")
+
+df_pca_results_a8 <-as_tibble(pca_result_a8$x)
+
+scree_a8 <- ggplot(pc_per_a8) +
+  geom_col(aes(y=Variance,x=`Principal component`, fill=factor(`Principal component`)))+
+  scale_fill_manual(values=c(pc_per_a8$pc_col))+
+  geom_line(aes(x=`Principal component`, y=`Cumulative variance`, colour=cv_col))+
+  geom_point(aes(x=`Principal component`, y=`Cumulative variance`, colour=cv_col), size=1)+
+  scale_colour_manual(values=c("#FFC300"="#FFC300"))+
+  geom_hline(yintercept=80, linetype=2)+
+  scale_x_continuous(breaks=seq(1:6))+
+  scale_y_continuous(name="Variance (%)",breaks=seq(from=0, to=100,by=10))+
+  theme_classic()+
+  theme(legend.position ="none")
+scree_a8
+```
+
+<font size='2' color='#317EAC'> Principal component (PC) analysis was performed to identify major sources of variability between samples. The respective variance accounted for by each PC was shown as blue bars on the scree plot, with the cumulative variance as a yellow line. </font>
+
+The first 2 PCs accounted for `r pc_per_a8$"Cumulative variance"[2]` of the variance and were subsequently plotted against each other to identify which of the known variables these may represent (**Fig.** **\@ref(fig:PCAa8)**).
+
+```{r PCAa8, fig.cap="**Principal components 1 and 2 show gene expression in planktonic and semi-dry biofilms is specific to isolate and growth mode**"}
+`Growth mode` <- growth_a8
+Phenotype <- phenotype_a8
+Sample <- sampleLabels_a8
+pca_plot_1_a8<- ggplot(df_pca_results_a8,
+                       aes(x=PC1, y=PC2, label=Sample, colour=`Growth mode`, shape=Phenotype)) +
+  geom_point(size=8, alpha=0.6)+
+  scale_colour_manual(values=c("Planktonic"="#2596be", "Pre-treated biofilm"="#96be25"))+ ##add custom colour scale for values
+  xlab(paste0("PC1 (",pc_per_a8[1,1],"%",")"))+
+  ylab(paste0("PC2 (",pc_per_a8[2,1],"%",")"))+
+  labs(col="Growth mode &", shape="phenotype",
+       ) +
+  coord_fixed()+
+  theme_bw()+
+  theme(legend.position = "bottom", #adds legend to the bottom of the figure
+        legend.box = "vertical", #causes the legend to sit as 2 rows within a "box" element
+        legend.margin = margin(t=0,r=0,b=0,l=0),
+        legend.text =element_text(size=14),
+        legend.title=element_text(size=14),
+        plot.margin=margin(t=5,r=0,b=0,l=0),
+        axis.title = element_text(size=14),
+        axis.text = element_text(size=14))
+int_pc1_pc2 <- ggplotly(pca_plot_1_a8)
+int_pc1_pc2
+```
+
+<font size='2' color='#317EAC'> The first two PCs were plotted against each other, showing the percentage of the total variance accounted for by each PC. Samples are coded by colour for growth mode. </font>
+
+In this analysis, the first PC accounted for `r pc_per_a8$Variance[1]`% of the variance and was likely the growth mode, as planktonic samples clustered to the left and biofilm to the right of the plot. The identity of the second PC, which accounted for a further `r pc_per_a8$Variance[2]`% of the variance, was not apparent from examining the remaining variables.
+
+***
+
 ## Pre-treated vs Untreated SDBs {.tabset .tabset-pills}
 
+### Combined analysis {#statsa3}
+#### Hierarchical clustering of samples {#h-clusta3}
 
+Samples were compared using an unsupervised hierarchical clustering algorithm to determine whether biological replicates of the same sample had consistent RNA-seq profiles with each other. First, a distance matrix was calculated between samples using log-cpm data and the Maximum Distance algorithm. Samples were clustered using complete agglomeration and the output represented as a dendrogram (**Fig.** **\@ref(fig:hclusta3)**).
+
+```{r hclusta3,  fig.cap= "**Hierarchical clustering of samples reveals isolate-specific patterns of gene expression**", out.width="70%"}
+group_a3 <- factor(targets_a3$Group) ##abbreviated version of group name for samples
+growth_a3 <- factor(targets_a3$`Full group`) ##extended version of group name, for labelling plots, etc
+phenotype_a3 <- factor(targets_a3$`Cellular Phenotype`) ##growth phenotype of isolate
+
+colnames(log2_cpm_norm_filt_DGEList_a3) <- sampleLabels_a3
+distance_a3 <- dist(t(log2_cpm_norm_filt_DGEList_a3), method = "maximum")
+clusters_a3 <- hclust(distance_a3, method = "complete")
+a3_dendro <- ggdendrogram(clusters_a3, rotate= FALSE, labels = TRUE)+
+  ylab("Distance")+
+  theme_classic()+
+  theme(axis.line.x = element_blank(),
+        axis.ticks.x=element_blank(),
+        axis.text.x = element_text(angle=90, size=14),
+        axis.text.y = element_text(size=12),
+        axis.title.x = element_blank(),
+        axis.title.y = element_text(angle=90, size=12, margin=margin(t=0,r=15,b=0,l=0)))
+a3_dendro
+```
+<font size='2' color='#317EAC'> Log<sub>2</sub>-transformed expression data from pre-treated semi-dry biofilms (TX) and planktonic (PK) cells were compared using unsupervised statistical analyses to examine patterns of expression between samples. Hierarchical clustering based on expression across all genes, was visualised as a dendrogram showing relative distance or similarity between samples.</font>
+
+Samples clustered by isolate, but unlike other comparisons, there appeared to be significant overlap between untreated and pre-treated SDBs. Two sub-groups were observed for NCPF8973, each with a mix of un-treated and pre-treated SDB samples, whereas there was no clear pattern of expression in NCPF8978 samples.
+
+***
+
+#### Principal component analysis and plots {#pcaa3}
+
+Principal component analysis (PCA) was used to identify variables which explain the variance between samples. Twelve principal components (PCs) which accounted for the total variance of the dataset, were identified using PCA (**Fig,** **\@ref(fig:screea3)**).
+
+```{r screea3, fig.cap="**Screeplot of principal components, and their respective and cumulative variance**", out.width="65%"}
+pca_result_a3 <- prcomp(t(log2_cpm_norm_filt_DGEList_a3), scale.=F, retx=T)
+pc_variance_a3 <-pca_result_a3$sdev^2 
+pc_per_a3<-tibble(round(pc_variance_a3/sum(pc_variance_a3)*100, 1))
+colnames(pc_per_a3) <-"Variance"
+pc_per_a3 <- pc_per_a3 %>% dplyr::mutate("Cumulative variance"= cumsum(Variance),
+                                         "cv_col"="#FFC300",
+                                         "Principal component"= seq(1:12),
+                                         "pc_col"="#87CEEB")
+
+df_pca_results_a3 <-as_tibble(pca_result_a3$x)
+
+scree_a3 <- ggplot(pc_per_a3) +
+  geom_col(aes(y=Variance,x=`Principal component`, fill=factor(`Principal component`)))+
+  scale_fill_manual(values=c(pc_per_a3$pc_col))+
+  geom_line(aes(x=`Principal component`, y=`Cumulative variance`, colour=cv_col))+
+  geom_point(aes(x=`Principal component`, y=`Cumulative variance`, colour=cv_col), size=1)+
+  scale_colour_manual(values=c("#FFC300"="#FFC300"))+
+  geom_hline(yintercept=80, linetype=2)+
+  scale_x_continuous(breaks=seq(1:12))+
+  scale_y_continuous(name="Variance (%)",breaks=seq(from=0, to=100,by=10))+
+  theme_classic()+
+  theme(legend.position ="none")
+scree_a3
+```
+
+<font size='2' color='#317EAC'> Principal component (PC) analysis was performed to identify major sources of variability between samples. The respective variance accounted for by each PC was shown as blue bars on the scree plot, with the cumulative variance as a yellow line. </font>
+
+The first 2 PCs accounted for `r pc_per_a3$"Cumulative variance"[2]` of the variance and were subsequently plotted against each other to identify which of the known variables these may represent (**Fig.** **\@ref(fig:PCAa3)**).
+
+```{r PCAa3, fig.cap="**Principal components 1 and 2 show gene expression in planktonic and semi-dry biofilms is specific to isolate and growth mode**"}
+`Growth mode` <- growth_a3
+Phenotype <- phenotype_a3
+Sample <- sampleLabels_a3
+pca_plot_1_a3<- ggplot(df_pca_results_a3,
+                       aes(x=PC1, y=PC2, label=Sample, colour=`Growth mode`, shape=Phenotype)) +
+  geom_point(size=8, alpha=0.6)+
+  scale_colour_manual(values=c("Untreated biofilm"="#EB4034", "Pre-treated biofilm"="#96be25"))+ ##add custom colour scale for values
+  xlab(paste0("PC1 (",pc_per_a3[1,1],"%",")"))+
+  ylab(paste0("PC2 (",pc_per_a3[2,1],"%",")"))+
+  labs(col="Growth mode &", shape="phenotype",
+       ) +
+  coord_fixed()+
+  theme_bw()+
+  theme(legend.position = "bottom", #adds legend to the bottom of the figure
+        legend.box = "vertical", #causes the legend to sit as 2 rows within a "box" element
+        legend.margin = margin(t=0,r=0,b=0,l=0),
+        legend.text =element_text(size=14),
+        legend.title=element_text(size=14),
+        plot.margin=margin(t=5,r=0,b=0,l=0),
+        axis.title = element_text(size=14),
+        axis.text = element_text(size=14))
+int_pc1_pc2 <- ggplotly(pca_plot_1_a3)
+int_pc1_pc2
+```
+
+<font size='2' color='#317EAC'> The first two PCs were plotted against each other, showing the percentage of the total variance accounted for by each PC. Samples are coded by colour for growth mode, and shape for phenotype of isolate, where NCPF8973 is single-celled and NCPF8978 is aggregating. </font>
+
+In this analysis, the first PC accounted for `r pc_per_a3$Variance[1]`% of the variance and may represent the isolate, with NCPF8973 (single-celled) clustering to the left of PC1 and NCPF8978 (aggregating) to the right. However, PC1 can better be divided into three clusters, with pre-treated SDB samples of NCPF8973 at the left-most, the majority of SDB samples of NCPF8978, and the remaining samples in the centre. The second PC, which accounted for a further `r pc_per_a3$Variance[2]`% of the variance, was not readily apparent from the data. There was a significant degree of overlap between samples from both isolates, and both growth modes.
+
+Both of the statistical methods used here demonstrate a high degree of overlap between untreated and pre-treated SDB samples from each isolate. 
+
+***
+
+### NCPF8973 {#statsa6}
+#### Hierarchical clustering of samples {#h-clusta6}
+
+Samples from isolate NCPF8973 were further compared in isolation  using an unsupervised hierarchical clustering algorithm to determine whether biological replicates of the same sample had consistent RNA-seq profiles with each other. First, a distance matrix was calculated between samples using log-cpm data and the Maximum Distance algorithm. Samples were clustered using complete agglomeration and the output represented as a dendrogram (**Fig.** **\@ref(fig:hclusta6)**).
+
+```{r hclusta6,  fig.cap= "**Hierarchical clustering of NCPF8973 samples**", out.width="70%"}
+group_a6 <- factor(targets_a6$Group) ##abbreviated version of group name for samples
+growth_a6 <- factor(targets_a6$`Full group`) ##extended version of group name, for labelling plots, etc
+phenotype_a6 <- factor(targets_a6$`Cellular Phenotype`) ##growth phenotype of isolate
+
+colnames(log2_cpm_norm_filt_DGEList_a6) <- sampleLabels_a6
+distance_a6 <- dist(t(log2_cpm_norm_filt_DGEList_a6), method = "maximum")
+clusters_a6 <- hclust(distance_a6, method = "complete")
+a6_dendro <- ggdendrogram(clusters_a6, rotate= FALSE, labels = TRUE)+
+  ylab("Distance")+
+  theme_classic()+
+  theme(axis.line.x = element_blank(),
+        axis.ticks.x=element_blank(),
+        axis.text.x = element_text(angle=90, size=14),
+        axis.text.y = element_text(size=12),
+        axis.title.x = element_blank(),
+        axis.title.y = element_text(angle=90, size=12, margin=margin(t=0,r=15,b=0,l=0)))
+a6_dendro
+```
+<font size='2' color='#317EAC'> Log<sub>2</sub>-transformed expression data from semi-dry biofilms (SDB) and planktonic (PK) cells were compared using unsupervised statistical analyses to examine patterns of expression between samples. Hierarchical clustering based on expression across all genes, was visualised as a dendrogram showing relative distance or similarity between samples.</font>
+
+Samples clustered by growth mode, as expected. The replicates of samples grouped quite closely, suggesting consistent RNA-seq profiles across the three independent experiments as denoted by _01, _02 and _03 at the end of each sample name.
+
+***
+
+#### Principal component analysis and plots {#pcaa6}
+
+Principal component analysis (PCA) was used to identify variables which explain the variance between samples. Twelve principal components (PCs) which accounted for the total variance of the dataset, were identified using PCA (**Fig.** **\@ref(fig:screea6)**).
+
+```{r screea6, fig.cap="**Screeplot of principal components, and their respective and cumulative variance**", out.width="65%"}
+pca_result_a6 <- prcomp(t(log2_cpm_norm_filt_DGEList_a6), scale.=F, retx=T)
+pc_variance_a6 <-pca_result_a6$sdev^2 
+pc_per_a6<-tibble(round(pc_variance_a6/sum(pc_variance_a6)*100, 1))
+colnames(pc_per_a6) <-"Variance"
+pc_per_a6 <- pc_per_a6 %>% dplyr::mutate("Cumulative variance"= cumsum(Variance),
+                                         "cv_col"="#FFC300",
+                                         "Principal component"= seq(1:6),
+                                         "pc_col"="#87CEEB")
+
+df_pca_results_a6 <-as_tibble(pca_result_a6$x)
+
+scree_a6 <- ggplot(pc_per_a6) +
+  geom_col(aes(y=Variance,x=`Principal component`, fill=factor(`Principal component`)))+
+  scale_fill_manual(values=c(pc_per_a6$pc_col))+
+  geom_line(aes(x=`Principal component`, y=`Cumulative variance`, colour=cv_col))+
+  geom_point(aes(x=`Principal component`, y=`Cumulative variance`, colour=cv_col), size=1)+
+  scale_colour_manual(values=c("#FFC300"="#FFC300"))+
+  geom_hline(yintercept=80, linetype=2)+
+  scale_x_continuous(breaks=seq(1:6))+
+  scale_y_continuous(name="Variance (%)",breaks=seq(from=0, to=100,by=10))+
+  theme_classic()+
+  theme(legend.position ="none")
+scree_a6
+```
+
+<font size='2' color='#317EAC'> Principal component (PC) analysis was performed to identify major sources of variability between samples. The respective variance accounted for by each PC was shown as blue bars on the scree plot, with the cumulative variance as a yellow line. </font>
+
+The first 2 PCs accounted for `r pc_per_a6$"Cumulative variance"[2]` of the variance and were subsequently plotted against each other to identify which of the known variables these may represent (**Fig.** **\@ref(fig:PCAa6)**).
+
+```{r PCAa6, fig.cap="**Principal components 1 and 2 show gene expression in planktonic and semi-dry biofilms is specific to growth mode**"}
+`Growth mode` <- growth_a6
+Phenotype <- phenotype_a6
+Sample <- sampleLabels_a6
+pca_plot_1_a6<- ggplot(df_pca_results_a6,
+                       aes(x=PC1, y=PC2, label=Sample, colour=`Growth mode`))+
+  geom_point(size=8, alpha=0.6)+
+  scale_colour_manual(values=c("Untreated biofilm"="#EB4034", "Pre-treated biofilm"="#96be25"))+ ##add custom colour scale for values
+  xlab(paste0("PC1 (",pc_per_a6[1,1],"%",")"))+
+  ylab(paste0("PC2 (",pc_per_a6[2,1],"%",")"))+
+  labs(col="Growth mode &", shape="phenotype",
+       ) +
+  coord_fixed()+
+  theme_bw()+
+  theme(legend.position = "bottom", #adds legend to the bottom of the figure
+        legend.box = "vertical", #causes the legend to sit as 2 rows within a "box" element
+        legend.margin = margin(t=0,r=0,b=0,l=0),
+        legend.text =element_text(size=14),
+        legend.title=element_text(size=14),
+        plot.margin=margin(t=5,r=0,b=0,l=0),
+        axis.title = element_text(size=14),
+        axis.text = element_text(size=14))
+int_pc1_pc2 <- ggplotly(pca_plot_1_a6)
+int_pc1_pc2
+```
+
+<font size='2' color='#317EAC'> The first two PCs were plotted against each other, showing the percentage of the total variance accounted for by each PC. Samples are coded by colour for growth mode. </font>
+
+In this analysis, the first PC accounted for `r pc_per_a6$Variance[1]`% of the variance, and may have been the growth mode, as untreated SDB samples clustered to the left and pre-treated SDB samples to the right of the plot. However, one of the pre-treated samples clustered to the left with the untreated samples, suggesting overlap in gene expression patterns between these samples. The identity of the second PC, which accounted for a further `r pc_per_a6$Variance[2]`% of the variance, was unclear from the available information. 
+
+***
+
+### NCPF8978 {#statsa9}
+#### Hierarchical clustering of samples {#h-clusta9}
+
+Samples were compared using an unsupervised hierarchical clustering algorithm to determine whether biological replicates of the same sample had consistent RNA-seq profiles with each other. First, a distance matrix was calculated between samples using log-cpm data and the Maximum Distance algorithm. Samples were clustered using complete agglomeration and the output represented as a dendrogram (**Fig.** **\@ref(fig:hclusta9)**).
+
+```{r hclusta9,  fig.cap= "**Hierarchical clustering of samples**", out.width="70%"}
+group_a9 <- factor(targets_a9$Group) ##abbreviated version of group name for samples
+growth_a9 <- factor(targets_a9$`Full group`) ##extended version of group name, for labelling plots, etc
+phenotype_a9 <- factor(targets_a9$`Cellular Phenotype`) ##growth phenotype of isolate
+
+colnames(log2_cpm_norm_filt_DGEList_a9) <- sampleLabels_a9
+distance_a9 <- dist(t(log2_cpm_norm_filt_DGEList_a9), method = "maximum")
+clusters_a9 <- hclust(distance_a9, method = "complete")
+a9_dendro <- ggdendrogram(clusters_a9, rotate= FALSE, labels = TRUE)+
+  ylab("Distance")+
+  theme_classic()+
+  theme(axis.line.x = element_blank(),
+        axis.ticks.x=element_blank(),
+        axis.text.x = element_text(angle=90, size=14),
+        axis.text.y = element_text(size=12),
+        axis.title.x = element_blank(),
+        axis.title.y = element_text(angle=90, size=12, margin=margin(t=0,r=15,b=0,l=0)))
+a9_dendro
+```
+<font size='2' color='#317EAC'> Log<sub>2</sub>-transformed expression data from NCPF8978 grown as semi-dry biofilms (SDB) and planktonic (PK) cells were compared using unsupervised statistical analyses to examine patterns of expression between samples. Hierarchical clustering based on expression across all genes, was visualised as a dendrogram showing relative distance or similarity between samples.</font>
+
+Samples did not appear to cluster by growth mode or any other known variable. This suggests a high degree of variability between samples and replicates.
+
+***
+
+#### Principal component analysis and plots {#pcaa9}
+
+Principal component analysis (PCA) was used to identify variables which explain the variance between samples. Twelve principal components (PCs) which accounted for the total variance of the dataset, were identified using PCA (**Fig.** **\@ref(fig:screea9)**).
+
+```{r screea9, fig.cap="**Screeplot of principal components, and their respective and cumulative variance**", out.width="65%"}
+pca_result_a9 <- prcomp(t(log2_cpm_norm_filt_DGEList_a9), scale.=F, retx=T)
+pc_variance_a9 <-pca_result_a9$sdev^2 
+pc_per_a9<-tibble(round(pc_variance_a9/sum(pc_variance_a9)*100, 1))
+colnames(pc_per_a9) <-"Variance"
+pc_per_a9 <- pc_per_a9 %>% dplyr::mutate("Cumulative variance"= cumsum(Variance),
+                                         "cv_col"="#FFC300",
+                                         "Principal component"= seq(1:6),
+                                         "pc_col"="#87CEEB")
+
+df_pca_results_a9 <-as_tibble(pca_result_a9$x)
+
+scree_a9 <- ggplot(pc_per_a9) +
+  geom_col(aes(y=Variance,x=`Principal component`, fill=factor(`Principal component`)))+
+  scale_fill_manual(values=c(pc_per_a9$pc_col))+
+  geom_line(aes(x=`Principal component`, y=`Cumulative variance`, colour=cv_col))+
+  geom_point(aes(x=`Principal component`, y=`Cumulative variance`, colour=cv_col), size=1)+
+  scale_colour_manual(values=c("#FFC300"="#FFC300"))+
+  geom_hline(yintercept=80, linetype=2)+
+  scale_x_continuous(breaks=seq(1:6))+
+  scale_y_continuous(name="Variance (%)",breaks=seq(from=0, to=100,by=10))+
+  theme_classic()+
+  theme(legend.position ="none")
+scree_a9
+```
+
+<font size='2' color='#317EAC'> Principal component (PC) analysis was performed to identify major sources of variability between samples. The respective variance accounted for by each PC was shown as blue bars on the scree plot, with the cumulative variance as a yellow line. </font>
+
+The first 2 PCs accounted for `r pc_per_a9$"Cumulative variance"[2]` of the variance and were subsequently plotted against each other to identify which of the known variables these may represent (**Fig.** **\@ref(fig:PCAa9)**).
+
+```{r PCAa9, fig.cap="**Principal components 1 and 2 show gene expression in planktonic and semi-dry biofilms is specific to isolate and growth mode**"}
+`Growth mode` <- growth_a9
+Phenotype <- phenotype_a9
+Sample <- sampleLabels_a9
+pca_plot_1_a9<- ggplot(df_pca_results_a9,
+                       aes(x=PC1, y=PC2, label=Sample, colour=`Growth mode`, shape=Phenotype)) +
+  geom_point(size=8, alpha=0.6)+
+  scale_colour_manual(values=c("Untreated biofilm"="#EB4034", "Pre-treated biofilm"="#96be25"))+ ##add custom colour scale for values
+  xlab(paste0("PC1 (",pc_per_a9[1,1],"%",")"))+
+  ylab(paste0("PC2 (",pc_per_a9[2,1],"%",")"))+
+  labs(col="Growth mode &", shape="phenotype",
+       ) +
+  coord_fixed()+
+  theme_bw()+
+  theme(legend.position = "bottom", #adds legend to the bottom of the figure
+        legend.box = "vertical", #causes the legend to sit as 2 rows within a "box" element
+        legend.margin = margin(t=0,r=0,b=0,l=0),
+        legend.text =element_text(size=14),
+        legend.title=element_text(size=14),
+        plot.margin=margin(t=5,r=0,b=0,l=0),
+        axis.title = element_text(size=14),
+        axis.text = element_text(size=14))
+int_pc1_pc2 <- ggplotly(pca_plot_1_a9)
+int_pc1_pc2
+```
+
+<font size='2' color='#317EAC'> The first two PCs were plotted against each other, showing the percentage of the total variance accounted for by each PC. Samples are coded by colour for growth mode. </font>
+
+In this analysis, the first PC accounted for `r pc_per_a9$Variance[1]`% of the variance, but the variable for which it accounts is unclear from the available data. All samples from both growth modes clustered to the left of PC1, with the exception of a lone sample from the pre-treated SDBs which sat on the right. The identity of the second PC, which accounted for a further `r pc_per_a9$Variance[2]`% of the variance, was also not apparent from examining the remaining variables.
+
+***
 
 # Differential Gene Expression analysis {#DGE-analysis .tabset .tabset-pills}
 
 Differentially-expressed genes between SDB and PK samples from both isolates were identified using the voom algorithm and associated statistical functions from the [Limma package](http://bioinf.wehi.edu.au/limma/). Using this pipeline, the mean-variance trend of the log-cpm data at the gene level is estimated using a non-normal distribution and used to predict the variance for each individual log-cpm value. Predicted variance is then used as a precision weight during linear-modelling of the data to estimate log~2~-adjusted fold changes (logFC) between groups of samples as specified in the study design. Finally, moderated t- and F- statistics, as well as the log-odds of differential expression between two groups are estimated using an empirical Bayes shrinkage method. 
 
-## Combined analysis {#DGEa1}
-### Determining relative expression levels {#limmaa1}
+## Untreated SDBs vs Planktonic cells {.tabset .tabset-pills}
+### Combined analysis {#DGEa1}
+#### Determining relative expression levels {#limmaa1}
 
-The results of the limma-voom analysis pipeline for all `r nrow(norm_filt_DGEList_a1)` genes in the combined-isolate analysis is given in **Table** <font color='#2FA4E7'>**6.11** </font>. Differential expression was calculated in SDB samples relative to PK samples, such that a positive logFC represents upregulation in SDBs, and a negative logFC downregulation in SDBs (or upregulation in PK cells). This table can be searched to find the results of all expressed genes within the combined-isolate dataset.
+The results of the limma-voom analysis pipeline for all `r nrow(norm_filt_DGEList_a1)` genes in the combined-isolate analysis is given in **Table** <font color='#2FA4E7'>**6.1** </font>. Differential expression was calculated in SDB samples relative to PK samples, such that a positive logFC represents upregulation in SDBs, and a negative logFC downregulation in SDBs (or upregulation in PK cells). This table can be searched to find the results of all expressed genes within the combined-isolate dataset.
 
 ```{r DGEa1}
 design_a1 <- model.matrix(~0 + group_a1)
@@ -914,7 +1617,7 @@ top_hits_df_a1 <- top_hits_df_a1 %>% dplyr::rename('Gene'='ID_Name')
 datatable(top_hits_df_a1[,2:8],
           extensions = c('KeyTable', "FixedHeader"),
           caption= htmltools::tags$caption(style='caption-side top; text-align: left; color: grey',
-                                           htmltools::tags$span("Table 6.11"),
+                                           htmltools::tags$span("Table 6.1"),
                                            htmltools::tags$span("Outputs of the limma differential gene expression analysis pipeline",
                                                                 style='font-weight: bold')),
           colnames=c("Gene","Log<sub>2</sub> fold change","Average expression","t","P-value","Adjusted p-value","B"),
@@ -938,7 +1641,7 @@ The outputs of the limma analysis pipeline are as follows:
 
 ***
 
-### Selection of DEGs {#resultsa1}
+#### Selection of DEGs {#resultsa1}
 
 The results of the limma analysis pipeline for all count data are illustrated in the volcano plot in **Fig.** **\@ref(fig:vplota1)**. The logFC in count data for each individual gene was plotted against the adjusted P-value derived from linear modelling; dashed lines represent the cut-offs for DE, specifically logFC between phenotypes was $\ge$ 1.5 in either direction with an adjusted P-value $\le$ 0.01. The red circles represent genes which were upregulated in SDBs, and blue those which were upregulated in planktonic cells (i.e downregulated in SDBs). Genes coloured in black did not meet either or both criteria for DEG designation.
 
@@ -1000,7 +1703,7 @@ int_vplot_a1
 
 Applying the logFC and  cutoffs identified `r nrow(a1_Up)` genes which were upregulated in semi-dry biofilm cells relative to planktonic, and `r nrow(a1_Down)` genes which were downregulated, as shown in **Fig.** **\@ref(fig:vplota1)**. The remainder of genes, represented as black circles in the volcano plot did not meet either or both of the criteria of $\ge$ 1.5-logFC in either direction, or adjusted p-value $\le$ 0.01.
 
-An interactive table with the average expression for each growth mode, the log-fold change, and the FDR-adjusted p-value of all `r nrow(my_diff_genes_a1)` DEGs, is shown in **Table** <font color='#2FA4E7'>**6.12** </font>.
+An interactive table with the average expression for each growth mode, the log-fold change, and the FDR-adjusted p-value of all `r nrow(my_diff_genes_a1)` DEGs, is shown in **Table** <font color='#2FA4E7'>**6.2** </font>.
 
 ``` {r DEGs_a1}
 my_diff_genes_a1 <- merge(x=my_diff_genes_a1, y=top_hits_df_a1, by='ID', all.x=TRUE, all.y=FALSE)
@@ -1011,7 +1714,7 @@ my_diff_genes_a1 <- my_diff_genes_a1%>%
 datatable(my_diff_genes_a1,
           extensions = c('KeyTable', "FixedHeader"),
           caption = htmltools::tags$caption(style = 'caption-side: top; text-align: left; color: grey',
-                                            htmltools::tags$span("Table 6.12:"),
+                                            htmltools::tags$span("Table 6.2:"),
                                             htmltools::tags$span(c("DEGs in semi-dry biofilms of ",htmltools::em("Candida auris"),
                                                                     " relative to planktonic cells"),
                                                                  style="font-weight:bold")),
@@ -1024,10 +1727,10 @@ datatable(my_diff_genes_a1,
 
 ***
 
-## NCPF8973 {#DGEa4}
-### Determining relative expression levels {#limmaa4}
+### NCPF8973 {#DGEa4}
+#### Determining relative expression levels {#limmaa4}
 
-Differentially-expressed genes between SDB and PK samples from NCPF8973 were identified using the same pipeline as the combined isolate analysis, as explained above (**Table** <font color='#2FA4E7'>**6.21**</font>). As before, logFC were calculated by comparing the SDB samples to the PK samples. A positive logFC therefore indicates upregulation in SDBs of NCPF8973, and vice versa for negative logFC values. This table can be searched to find the results of all expressed genes within the NCPF8973 dataset.
+Differentially-expressed genes between SDB and PK samples from NCPF8973 were identified using the same pipeline as the combined isolate analysis, as explained above (**Table** <font color='#2FA4E7'>**6.3**</font>). As before, logFC were calculated by comparing the SDB samples to the PK samples. A positive logFC therefore indicates upregulation in SDBs of NCPF8973, and vice versa for negative logFC values. This table can be searched to find the results of all expressed genes within the NCPF8973 dataset.
 
 ```{r DGEa4}
 design_a4 <- model.matrix(~0 + group_a4)
@@ -1052,7 +1755,7 @@ top_hits_df_a4 <- top_hits_df_a4 %>% dplyr::rename('Gene'='ID_Name')
 datatable(top_hits_df_a4[,2:8],
           extensions = c('KeyTable', "FixedHeader"),
           caption= htmltools::tags$caption(style='caption-side top; text-align: left; color: grey',
-                                           htmltools::tags$span("Table 6.21"),
+                                           htmltools::tags$span("Table 6.3"),
                                            htmltools::tags$span("Outputs of the limma differential gene expression analysis pipeline for NCPF8973 samples",
                                                                 style='font-weight: bold')),
           colnames=c("Gene","Log<sub>2</sub> fold change","Average expression","t","P-value","Adjusted p-value","B"),
@@ -1063,7 +1766,7 @@ datatable(top_hits_df_a4[,2:8],
 
 ***
 
-### Selection of DEGs {#resultsa4}
+#### Selection of DEGs {#resultsa4}
 
 The results of the limma analysis pipeline for samples from NCPF8973 are illustrated in the volcano plot in **Fig.** **\@ref(fig:vplota4)**. Differential gene expression was determined using the same cut-offs as previously.
 
@@ -1121,11 +1824,11 @@ int_vplot_a4 <- ggplotly(vplot_a4) %>%
 int_vplot_a4
 ````
 
-<font size='2' color='#317EAC'> Volcano plot depicting the log2-fold change (logFC) in expression against q-values for significance, for all genes expressed in samples of NCPF8973. Dashed lines indicate the cut-offs for determining differential expression, specifically logFC ≥1.5 in either direction (vertical) and q <0.01 (horizontal). Differential gene expression was examined between semi-dry biofilm (SDB) cells and planktonic (PK) cells such that positive logFC values denote upregulation in the SDB group relative to the PK group (red) and negative logFC, downregulation (blue) </font>
+<font size='2' color='#317EAC'> Volcano plot depicting the log2-fold change (logFC) in expression against q-values for significance, for all genes expressed in samples of NCPF8973. Dashed lines indicate the cut-offs for determining differential expression, specifically logFC ≥1.5 in either direction (vertical) and q <0.01 (horizontal). Differential gene expression was examined between semi-dry biofilm (SDB) cells and planktonic (PK) cells such that positive logFC values denote upregulation in the SDB group relative to the PK group (red) and negative logFC, downregulation (blue). </font>
 
 Applying the logFC and  cutoffs identified `r nrow(a4_Up)` genes which were upregulated in semi-dry biofilm cells relative to planktonic, and `r nrow(a4_Down)` genes which were downregulated, as shown in **Fig.** **\@ref(fig:vplota4)**. The remainder of genes, represented as black circles in the volcano plot did not meet either or both of the criteria of $\ge$ 1.5-logFC in either direction, or adjusted p-value $\le$ 0.01.
 
-An interactive table with the average expression for each growth mode, the log-fold change, and the FDR-adjusted p-value of all `r nrow(my_diff_genes_a4)` DEGs, is shown in **Table** <font color='#2FA4E7'> **6.22** </font>.
+An interactive table with the average expression for each growth mode, the log-fold change, and the FDR-adjusted p-value of all `r nrow(my_diff_genes_a4)` DEGs, is shown in **Table** <font color='#2FA4E7'> **6.4** </font>.
 
 ``` {r DEGs_a4}
 my_diff_genes_a4 <- merge(x=my_diff_genes_a4, y=top_hits_df_a4, by='ID', all.x=TRUE, all.y=FALSE)
@@ -1136,7 +1839,7 @@ my_diff_genes_a4 <- my_diff_genes_a4%>%
 datatable(my_diff_genes_a4,
               extensions = c('KeyTable', "FixedHeader"),
               caption = htmltools::tags$caption(style = 'caption-side: top; text-align: left; color:grey',
-                                                htmltools::tags$span("Table 6.22:"),
+                                                htmltools::tags$span("Table 6.4:"),
                                                 htmltools::tags$span("DEGs in semi-dry biofilms of NCPF8973, relative to planktonic cells"),
                                                                      style="font-weight:bold"),
               colnames = c("Gene", "Semi-dry biofilms", "Planktonic cells",
@@ -1148,10 +1851,10 @@ datatable(my_diff_genes_a4,
 
 ***
 
-## NCPF8978 {#DGEa7}
-### Determining relative expression levels {#limmaa7}
+### NCPF8978 {#DGEa7}
+#### Determining relative expression levels {#limmaa7}
 
-Data from isolate NCPF8978 samples were also analysed using the limma-voom pipeline, and the outputs can be examined in **Table** <font color='#2FA4E7'>**6.31** </font>. Expression in SDB samples was compared to the PK samples for all genes, and positive FC values represent upregulation in the SDB group. This table can be searched to find the results of all expressed genes within the NCPF8978 dataset.
+Data from isolate NCPF8978 samples were also analysed using the limma-voom pipeline, and the outputs can be examined in **Table** <font color='#2FA4E7'>**6.5** </font>. Expression in SDB samples was compared to the PK samples for all genes, and positive FC values represent upregulation in the SDB group. This table can be searched to find the results of all expressed genes within the NCPF8978 dataset.
 
 ```{r DGEa7}
 design_a7 <- model.matrix(~0 + group_a7)
@@ -1176,7 +1879,7 @@ top_hits_df_a7 <- top_hits_df_a7 %>% dplyr::rename('Gene'='ID_Name')
 datatable(top_hits_df_a7[,2:8],
           extensions = c('KeyTable', "FixedHeader"),
           caption= htmltools::tags$caption(style='caption-side top; text-align: left; color: grey',
-                                           htmltools::tags$span("Table 6.31"),
+                                           htmltools::tags$span("Table 6.5"),
                                            htmltools::tags$span("Outputs of the limma differential gene expression analysis pipeline for NCPF8978 samples",
                                                                 style='font-weight: bold')),
           colnames=c("Gene","Log<sub>2</sub> fold change","Average expression","t","P-value","Adjusted p-value","B"),
@@ -1187,7 +1890,7 @@ datatable(top_hits_df_a7[,2:8],
 
 ***
 
-### Selection of DEGs {#resultsa7}
+#### Selection of DEGs {#resultsa7}
 
 The results of the limma analysis pipeline for samples from NCPF8973 are illustrated in the volcano plot in **Fig.** **\@ref(fig:vplota7)**. Differential gene expression was determined using the same cut-offs as previously.
 
@@ -1245,11 +1948,11 @@ int_vplot_a7 <- ggplotly(vplot_a7) %>%
 int_vplot_a7
 ````
 
-<font size='2' color='#317EAC'> Volcano plot depicting the log2-fold change (logFC) in expression against q-values for significance, for all genes expressed in samples of NCPF8978. Dashed lines indicate the cut-offs for determining differential expression, specifically logFC ≥1.5 in either direction (vertical) and q <0.01 (horizontal). Differential gene expression was examined between semi-dry biofilm (SDB) cells and planktonic (PK) cells such that positive logFC values denote upregulation in the SDB group relative to the PK group (red) and negative logFC, downregulation (blue) </font>
+<font size='2' color='#317EAC'> Volcano plot depicting the log2-fold change (logFC) in expression against q-values for significance, for all genes expressed in samples of NCPF8978. Dashed lines indicate the cut-offs for determining differential expression, specifically logFC ≥1.5 in either direction (vertical) and q <0.01 (horizontal). Differential gene expression was examined between semi-dry biofilm (SDB) cells and planktonic (PK) cells such that positive logFC values denote upregulation in the SDB group relative to the PK group (red) and negative logFC, downregulation (blue). </font>
 
 Applying the logFC and  cutoffs identified `r nrow(a7_Up)` genes which were upregulated in semi-dry biofilm cells relative to planktonic, and `r nrow(a7_Down)` genes which were downregulated, as shown in **Fig.** **\@ref(fig:vplota7)**. The remainder of genes, represented as black circles in the volcano plot did not meet either or both of the criteria of $\ge$ 1.5-logFC in either direction, or adjusted p-value $\le$ 0.01.
 
-An interactive table with the average expression for each growth mode, the log-fold change, and the FDR-adjusted p-value of all `r nrow(my_diff_genes_a7)` DEGs, is shown in **Table** <font color='#2FA4E7'> **6.32** </font>.
+An interactive table with the average expression for each growth mode, the log-fold change, and the FDR-adjusted p-value of all `r nrow(my_diff_genes_a7)` DEGs, is shown in **Table** <font color='#2FA4E7'> **6.6** </font>.
 
 ``` {r DEGs_a7}
 my_diff_genes_a7 <- merge(x=my_diff_genes_a7, y=top_hits_df_a7, by='ID', all.x=TRUE, all.y=FALSE)
@@ -1260,7 +1963,7 @@ my_diff_genes_a7 <- my_diff_genes_a7%>%
 datatable(my_diff_genes_a7,
               extensions = c('KeyTable', "FixedHeader"),
               caption = htmltools::tags$caption(style = 'caption-side: top; text-align: left; color:grey',
-                                                htmltools::tags$span("Table 6.32:"),
+                                                htmltools::tags$span("Table 6.6:"),
                                                 htmltools::tags$span("DEGs in semi-dry biofilms of NCPF8978, relative to planktonic cells",
                                                                      style="font-weight:bold")
                                                 ),
@@ -1270,6 +1973,688 @@ datatable(my_diff_genes_a7,
               options = list(keys = TRUE, searchHighlight = TRUE, pageLength = 5, 
                              lengthMenu = c("5","10", "25", "50", "100")))
 ```
+
+## Pre-treated SDBs vs Planktonic cells {.tabset .tabset-pills}
+
+### Combined analysis {#DGEa2}
+#### Determining relative expression levels {#limmaa2}
+
+The results of the limma-voom analysis pipeline for all `r nrow(norm_filt_DGEList_a2)` genes in the combined-isolate analysis is given in **Table** <font color='#2FA4E7'>**6.7** </font>. Differential expression was calculated in pre-treated SDB samples (aka 'TX') relative to PK samples, such that a positive logFC represents upregulation in TX, and a negative logFC downregulation in TX (or upregulation in PK cells). This table can be searched to find the results of all expressed genes within the combined-isolate dataset.
+
+```{r DGEa2}
+design_a2 <- model.matrix(~0 + group_a2)
+colnames(design_a2) <- levels(group_a2)
+
+v_DGEList_filt_norm_a2 <- voom(norm_filt_DGEList_a2, design_a2, plot = FALSE)
+
+fit_a2 <- lmFit(v_DGEList_filt_norm_a2, design_a2)
+
+contrast_matrix_a2 <- makeContrasts(phenotype = TX - PK,
+                                 levels=design_a2)
+
+fits_a2 <- contrasts.fit(fit_a2, contrast_matrix_a2)
+
+eb_fit_a2 <- eBayes(fits_a2)
+
+top_hits_a2 <- topTable(eb_fit_a2, adjust ="BH", coef=1, number=5500, sort.by="logFC")
+top_hits_df_a2 <- top_hits_a2%>% as_tibble(rownames = "ID")
+top_hits_df_a2 <- merge(x=Tx_map, all.x=FALSE, y=top_hits_df_a2, all.y=TRUE, by='ID')
+top_hits_df_a2 <- top_hits_df_a2 %>% dplyr::rename('Gene'='ID_Name')
+
+datatable(top_hits_df_a2[,2:8],
+          extensions = c('KeyTable', "FixedHeader"),
+          caption= htmltools::tags$caption(style='caption-side top; text-align: left; color: grey',
+                                           htmltools::tags$span("Table 6.7"),
+                                           htmltools::tags$span("Outputs of the limma differential gene expression analysis pipeline",
+                                                                style='font-weight: bold')),
+          colnames=c("Gene","Log<sub>2</sub> fold change","Average expression","t","P-value","Adjusted p-value","B"),
+          escape = FALSE,
+          options= list(pageLength=10, searchHighlight=TRUE, keys=TRUE)
+          ) %>% formatSignif(columns = c("logFC", "AveExpr","t","P.Value","adj.P.Val","B"), digits = 3)
+```
+
+#### Selection of DEGs {#resultsa2}
+
+The results of the limma analysis pipeline for all count data are illustrated in the volcano plot in **Fig.** **\@ref(fig:vplota2)**. The logFC in count data for each individual gene was plotted against the adjusted P-value derived from linear modelling; dashed lines represent the cut-offs for DE, specifically logFC between phenotypes was $\ge$ 1.5 in either direction with an adjusted P-value $\le$ 0.01. The green circles represent genes which were upregulated in TX, and blue those which were upregulated in planktonic cells (i.e downregulated in SDBs). Genes coloured in black did not meet one or both criteria for DEG designation.
+
+``` {r diffgenesa2}
+results_a2 <- decideTests(eb_fit_a2, method="global", adjust.method="BH", p.value=0.01, lfc=1.5)
+
+diff_genes_a2 <- v_DGEList_filt_norm_a2$E[results_a2[,1] !=0,]
+colnames(diff_genes_a2) <- colnames_a2
+
+my_diff_genes_a2 <- diff_genes_a2 %>% as_tibble(rownames = "ID")%>% 
+  mutate(TX_AVG = (TX01 + TX02 + TX03 + TX04 + TX05 + TX06)/6,
+         PK_AVG = (PK01 + PK02 + PK03 + PK04 + PK05 + PK06)/6,
+         Log2FC = (TX_AVG - PK_AVG)) %>% 
+  mutate_if(is.numeric, round, 2)
+my_diff_genes_a2 <- my_diff_genes_a2[,c(1,14:16)] %>% as_tibble()
+my_diff_genes_a2 <- merge(x=Tx_map, y=my_diff_genes_a2, by= 'ID', all.x=FALSE, all.y=TRUE)
+
+the_diff_genes_a2 <- my_diff_genes_a2
+the_diff_genes_a2$Up <-ifelse(the_diff_genes_a2$Log2FC >=1, 1, 0)
+the_diff_genes_a2$Down <- ifelse(the_diff_genes_a2$Log2FC <=-1, -1, 0)
+the_diff_genes_a2 <- the_diff_genes_a2[, c(1:2,6:7)] %>% as_tibble()
+a2_Up <- the_diff_genes_a2[the_diff_genes_a2$Up==1,-4] %>% as_tibble()
+colnames(a2_Up) <-c("ID","ID_Name", "Up")
+a2_Down <- the_diff_genes_a2[the_diff_genes_a2$Down==-1,-3] %>% as_tibble()
+colnames(a2_Down) <- c("ID","ID_Name", "Down")
+```
+
+````{r vplota2, fig.cap= "**Fold changes in gene expression between _Candida auris_ semi-dry biofilm cells and planktonic cells**"}
+volcano_a2 <- top_hits_df_a2 %>% 
+  mutate(Colour=case_when(c(logFC >=1.5 & adj.P.Val<0.01) ~ "green", 
+                          c(logFC<=-1.5 & adj.P.Val<0.01) ~ "blue"))
+volcano_a2$Colour <- if_else(is.na(volcano_a2$Colour), "black", volcano_a2$Colour)
+
+vplot_a2 <- ggplot(volcano_a2, aes(y=-log10(adj.P.Val), x=logFC, label=Gene))+
+  geom_hline(yintercept=2, linetype=2)+ #add dashed line (type2) to show cut-off of p-values
+  geom_vline(xintercept=-1.5, linetype=2)+ #add dashed line to show cut-off of down-regulated genes
+  geom_vline(xintercept=1.5, linetype=2)+
+  annotate("text", x=7.4, y=2.4, label=nrow(a2_Up), fontface=2, size=4, colour="#96EB25")+ 
+  annotate("text", x=-7.4, y=2.4, label=nrow(a2_Down), fontface=2, size=4, colour="#2596be")+
+  geom_point(aes(colour=Colour),size=1.5, alpha= 0.6) +
+  scale_colour_manual(values = c("blue"="#2596be",
+                                 "green"="#96BE25",
+                                 "black"="black"))+
+  scale_y_continuous(limits=c(0,8.25),breaks=seq(0,8, by=1))+
+  scale_x_continuous(limits=c(-8.5,8.5), breaks=seq(-8,8, by=2))+
+  mdthemes::md_theme_bw()+
+  labs(x="Log<sub>2</sub>-fold change",
+       y="-Log<sub>10</sub>-q value")+
+  theme(plot.margin = margin(t=5,r=5,b=5,l=5),
+        legend.position = "none")
+
+int_vplot_a2 <- ggplotly(vplot_a2) %>%
+  layout(xaxis= list(title= "Fold change in expression (log<sub>2</sub>-corrected)"),
+         yaxis= list(title= "Adjusted p-value (-log<sub>10</sub>-corrected)"))
+int_vplot_a2
+````
+
+<font size='2' color='#317EAC'> Volcano plot depicting the log2-fold change (logFC) in expression against q-values for significance, for all genes in the combined data from two _C. auris_ isolates. Dashed lines indicate the cut-offs for determining differential expression, specifically logFC ≥1.5 in either direction (vertical) and q <0.01 (horizontal). Differential gene expression was examined between pre-treated semi-dry biofilm (TX) cells and planktonic (PK) cells such that positive logFC values denote upregulation in the TX group relative to the PK group (green) and negative logFC, downregulation (blue). </font>
+
+Applying the logFC and  cutoffs identified `r nrow(a2_Up)` genes which were upregulated in TX cells relative to PK, and `r nrow(a2_Down)` genes which were downregulated, as shown in **Fig.** **\@ref(fig:vplota2)**. The remainder of genes, represented as black circles in the volcano plot did not meet either or both of the criteria of $\ge$ 1.5-logFC in either direction, or adjusted p-value $\le$ 0.01.
+
+An interactive table with the average expression for each growth mode, the log-fold change, and the FDR-adjusted p-value of all `r nrow(my_diff_genes_a2)` DEGs, is shown in **Table** <font color='#2FA4E7'>**6.8** </font>.
+
+``` {r DEGs_a2}
+my_diff_genes_a2 <- merge(x=my_diff_genes_a2, y=top_hits_df_a2, by='ID', all.x=TRUE, all.y=FALSE)
+my_diff_genes_a2 <- my_diff_genes_a2%>%
+  dplyr::select('Gene','TX_AVG','PK_AVG','logFC','adj.P.Val')%>%
+  mutate_if(is.numeric, round, 4)
+
+datatable(my_diff_genes_a2,
+          extensions = c('KeyTable', "FixedHeader"),
+          caption = htmltools::tags$caption(style = 'caption-side: top; text-align: left; color: grey',
+                                            htmltools::tags$span("Table 6.8:"),
+                                            htmltools::tags$span(c("DEGs in pre-treated biofilms of ",htmltools::em("Candida auris"),
+                                                                    " relative to planktonic cells"),
+                                                                 style="font-weight:bold")),
+          colnames = c("Gene", "Pre-treated biofilms", "Planktonic cells",
+                       "Log<sub>2</sub> fold change", "Adjusted p-value"),
+          escape = FALSE,
+          options = list(keys = TRUE, searchHighlight = TRUE, pageLength = 5,
+                         lengthMenu = c("5","10", "25", "50", "100")))
+```
+
+***
+
+### NCPF8973 {#DGEa5}
+#### Determining relative expression levels {#limmaa5}
+
+Differentially-expressed genes between TX and PK samples from NCPF8973 were identified using the same pipeline as the combined isolate analysis, as explained above (**Table** <font color='#2FA4E7'>**6.9**</font>). As before, logFC were calculated by comparing the TX samples to the PK samples. A positive logFC therefore indicates upregulation in TX samples of NCPF8973, and vice versa for negative logFC values. This table can be searched to find the results of all expressed genes within the NCPF8973 dataset.
+
+```{r DGEa5}
+design_a5 <- model.matrix(~0 + group_a5)
+colnames(design_a5) <- levels(group_a5)
+
+v_DGEList_filt_norm_a5 <- voom(norm_filt_DGEList_a5, design_a5, plot = FALSE)
+
+fit_a5 <- lmFit(v_DGEList_filt_norm_a5, design_a5)
+
+contrast_matrix_a5 <- makeContrasts(phenotype = TX - PK,
+                                 levels=design_a5)
+
+fits_a5 <- contrasts.fit(fit_a5, contrast_matrix_a5)
+
+eb_fit_a5 <- eBayes(fits_a5)
+
+top_hits_a5 <- topTable(eb_fit_a5, adjust ="BH", coef=1, number=5500, sort.by="logFC")
+top_hits_df_a5 <- top_hits_a5%>% as_tibble(rownames = "ID")
+top_hits_df_a5 <- merge(x=Tx_map, all.x=FALSE, y=top_hits_df_a5, all.y=TRUE, by='ID')
+top_hits_df_a5 <- top_hits_df_a5 %>% dplyr::rename('Gene'='ID_Name')
+
+datatable(top_hits_df_a5[,2:8],
+          extensions = c('KeyTable', "FixedHeader"),
+          caption= htmltools::tags$caption(style='caption-side top; text-align: left; color: grey',
+                                           htmltools::tags$span("Table 6.9"),
+                                           htmltools::tags$span("Outputs of the limma differential gene expression analysis pipeline for NCPF8973 samples",
+                                                                style='font-weight: bold')),
+          colnames=c("Gene","Log<sub>2</sub> fold change","Average expression","t","P-value","Adjusted p-value","B"),
+          escape = FALSE,
+          options= list(pageLength=10, searchHighlight=TRUE, keys=TRUE)
+          ) %>% formatSignif(columns = c("logFC", "AveExpr","t","P.Value","adj.P.Val","B"), digits = 3)
+```
+
+***
+
+#### Selection of DEGs {#resultsa5}
+
+The results of the limma analysis pipeline for samples from NCPF8973 are illustrated in the volcano plot in **Fig.** **\@ref(fig:vplota5)**. Differential gene expression was determined using the same cut-offs as previously.
+
+``` {r diffgenesa5}
+results_a5 <- decideTests(eb_fit_a5, method="global", adjust.method="BH", p.value=0.01, lfc=1.5)
+
+diff_genes_a5 <- v_DGEList_filt_norm_a5$E[results_a5[,1] !=0,]
+colnames(diff_genes_a5) <- colnames_a5
+
+my_diff_genes_a5 <- diff_genes_a5 %>% as_tibble(rownames = "ID")%>% 
+  mutate(TX_AVG = (TX01 + TX02 + TX03)/3,
+         PK_AVG = (PK01 + PK02 + PK03)/3,
+         Log2FC = (TX_AVG - PK_AVG)) %>% 
+  mutate_if(is.numeric, round, 2)
+my_diff_genes_a5 <- my_diff_genes_a5[,c(1,8:10)] %>% as_tibble()
+my_diff_genes_a5 <- merge(x=Tx_map, y=my_diff_genes_a5, by= 'ID', all.x=FALSE, all.y=TRUE)
+
+the_diff_genes_a5 <- my_diff_genes_a5
+the_diff_genes_a5$Up <-ifelse(the_diff_genes_a5$Log2FC >=1, 1, 0)
+the_diff_genes_a5$Down <- ifelse(the_diff_genes_a5$Log2FC <=-1, -1, 0)
+the_diff_genes_a5 <- the_diff_genes_a5[, c(1:2,6:7)] %>% as_tibble()
+a5_Up <- the_diff_genes_a5[the_diff_genes_a5$Up==1,-4] %>% as_tibble()
+colnames(a5_Up) <-c("ID","ID_Name", "Up")
+a5_Down <- the_diff_genes_a5[the_diff_genes_a5$Down==-1,-3] %>% as_tibble()
+colnames(a5_Down) <- c("ID","ID_Name", "Down")
+```
+
+````{r vplota5, fig.cap= "**Fold changes in gene expression between semi-dry biofilm cells and planktonic cells of NCPF8973**"}
+volcano_a5 <- top_hits_df_a5 %>% 
+  mutate(Colour=case_when(c(logFC >=1.5 & adj.P.Val<0.01) ~ "green", 
+                          c(logFC<=-1.5 & adj.P.Val<0.01) ~ "blue"))
+volcano_a5$Colour <- if_else(is.na(volcano_a5$Colour), "black", volcano_a5$Colour)
+
+vplot_a5 <- ggplot(volcano_a5, aes(y=-log10(adj.P.Val), x=logFC, label=Gene))+
+  geom_hline(yintercept=2, linetype=2)+ #add dashed line (type2) to show cut-off of p-values
+  geom_vline(xintercept=-1.5, linetype=2)+ #add dashed line to show cut-off of down-regulated genes
+  geom_vline(xintercept=1.5, linetype=2)+
+  annotate("text", x=7.4, y=2.4, label=nrow(a5_Up), fontface=2, size=4, colour="#96be25")+ 
+  annotate("text", x=-7.0, y=2.4, label=nrow(a5_Down), fontface=2, size=4, colour="#2596be")+
+  geom_point(aes(colour=Colour),size=1.5, alpha= 0.6) +
+  scale_colour_manual(values = c("blue"="#2596be",
+                                 "green"="#96be25",
+                                 "black"="black"))+
+  scale_y_continuous(limits=c(0,8.25),breaks=seq(0,8, by=1))+
+  scale_x_continuous(limits=c(-8.5,8.5), breaks=seq(-8,8, by=2))+
+  mdthemes::md_theme_bw()+
+  labs(x="Log<sub>2</sub>-fold change",
+       y="-Log<sub>10</sub>-q value")+
+  theme(plot.margin = margin(t=5,r=5,b=5,l=5),
+        legend.position = "none")
+
+int_vplot_a5 <- ggplotly(vplot_a5) %>%
+  layout(xaxis= list(title= "Fold change in expression (log<sub>2</sub>-corrected)"),
+         yaxis= list(title= "Adjusted p-value (-log<sub>10</sub>-corrected)"))
+int_vplot_a5
+````
+
+<font size='2' color='#317EAC'> Volcano plot depicting the log2-fold change (logFC) in expression against q-values for significance, for all genes expressed in samples of NCPF8973. Dashed lines indicate the cut-offs for determining differential expression, specifically logFC ≥1.5 in either direction (vertical) and q <0.01 (horizontal). Differential gene expression was examined between pre-treated semi-dry biofilm (TX) cells and planktonic (PK) cells such that positive logFC values denote upregulation in the TX group relative to the PK group (green) and negative logFC, downregulation (blue). </font>
+
+Applying the logFC and  cutoffs identified `r nrow(a5_Up)` genes which were upregulated in semi-dry biofilm cells relative to planktonic, and `r nrow(a5_Down)` genes which were downregulated, as shown in **Fig.** **\@ref(fig:vplota5)**. The remainder of genes, represented as black circles in the volcano plot did not meet either or both of the criteria of $\ge$ 1.5-logFC in either direction, or adjusted p-value $\le$ 0.01.
+
+An interactive table with the average expression for each growth mode, the log-fold change, and the FDR-adjusted p-value of all `r nrow(my_diff_genes_a5)` DEGs, is shown in **Table** <font color='#2FA4E7'> **6.10** </font>.
+
+``` {r DEGs_a5}
+my_diff_genes_a5 <- merge(x=my_diff_genes_a5, y=top_hits_df_a5, by='ID', all.x=TRUE, all.y=FALSE)
+my_diff_genes_a5 <- my_diff_genes_a5%>%
+  dplyr::select('Gene','TX_AVG','PK_AVG','logFC','adj.P.Val')%>%
+  mutate_if(is.numeric, round, 4)
+
+datatable(my_diff_genes_a5,
+              extensions = c('KeyTable', "FixedHeader"),
+              caption = htmltools::tags$caption(style = 'caption-side: top; text-align: left; color:grey',
+                                                htmltools::tags$span("Table 6.10:"),
+                                                htmltools::tags$span("DEGs in pre-treated biofilms of NCPF8973, relative to planktonic cells"),
+                                                                     style="font-weight:bold"),
+              colnames = c("Gene", "Pre-treated biofilms", "Planktonic cells",
+                           "Log<sub>2</sub> fold change", "Adjusted p-value"),
+              escape = FALSE, 
+              options = list(keys = TRUE, searchHighlight = TRUE, pageLength = 5, 
+                             lengthMenu = c("5","10", "25", "50", "100")))
+```
+
+***
+
+### NCPF8978 {#DGEa8}
+#### Determining relative expression levels {#limmaa8}
+
+Data from isolate NCPF8978 samples were also analysed using the limma-voom pipeline, and the outputs can be examined in **Table** <font color='#2Fa5E7'>**6.11** </font>. Expression in TX samples was compared to the PK samples for all genes, and positive FC values represent upregulation in the TX group. This table can be searched to find the results of all expressed genes within the NCPF8978 dataset.
+
+```{r DGEa8}
+design_a8 <- model.matrix(~0 + group_a8)
+colnames(design_a8) <- levels(group_a8)
+
+v_DGEList_filt_norm_a8 <- voom(norm_filt_DGEList_a8, design_a8, plot = FALSE)
+
+fit_a8 <- lmFit(v_DGEList_filt_norm_a8, design_a8)
+
+contrast_matrix_a8 <- makeContrasts(phenotype = TX - PK,
+                                 levels=design_a8)
+
+fits_a8 <- contrasts.fit(fit_a8, contrast_matrix_a8)
+
+eb_fit_a8 <- eBayes(fits_a8)
+
+top_hits_a8 <- topTable(eb_fit_a8, adjust ="BH", coef=1, number=5500, sort.by="logFC")
+top_hits_df_a8 <- top_hits_a8%>% as_tibble(rownames = "ID")
+top_hits_df_a8 <- merge(x=Tx_map, all.x=FALSE, y=top_hits_df_a8, all.y=TRUE, by='ID')
+top_hits_df_a8 <- top_hits_df_a8 %>% dplyr::rename('Gene'='ID_Name')
+
+datatable(top_hits_df_a8[,2:8],
+          extensions = c('KeyTable', "FixedHeader"),
+          caption= htmltools::tags$caption(style='caption-side top; text-align: left; color: grey',
+                                           htmltools::tags$span("Table 6.11"),
+                                           htmltools::tags$span("Outputs of the limma differential gene expression analysis pipeline for NCPF8978 samples",
+                                                                style='font-weight: bold')),
+          colnames=c("Gene","Log<sub>2</sub> fold change","Average expression","t","P-value","Adjusted p-value","B"),
+          escape = FALSE,
+          options= list(pageLength=10, searchHighlight=TRUE, keys=TRUE)
+          ) %>% formatSignif(columns = c("logFC", "AveExpr","t","P.Value","adj.P.Val","B"), digits = 3)
+```
+
+***
+
+#### Selection of DEGs {#resultsa8}
+
+The results of the limma analysis pipeline for samples from NCPF8973 are illustrated in the volcano plot in **Fig.** **\@ref(fig:vplota8)**. Differential gene expression was determined using the same cut-offs as previously.
+
+``` {r diffgenesa8}
+results_a8 <- decideTests(eb_fit_a8, method="global", adjust.method="BH", p.value=0.01, lfc=1.5)
+
+diff_genes_a8 <- v_DGEList_filt_norm_a8$E[results_a8[,1] !=0,]
+colnames(diff_genes_a8) <- colnames_a8
+
+my_diff_genes_a8 <- diff_genes_a8 %>% as_tibble(rownames = "ID")%>% 
+  mutate(TX_AVG = (TX04 + TX05 + TX06)/3,
+         PK_AVG = (PK04 + PK05 + PK06)/3,
+         Log2FC = (TX_AVG - PK_AVG)) %>% 
+  mutate_if(is.numeric, round, 2)
+my_diff_genes_a8 <- my_diff_genes_a8[,c(1,8:10)] %>% as_tibble()
+my_diff_genes_a8 <- merge(x=Tx_map, y=my_diff_genes_a8, by= 'ID', all.x=FALSE, all.y=TRUE)
+
+the_diff_genes_a8 <- my_diff_genes_a8
+the_diff_genes_a8$Up <-ifelse(the_diff_genes_a8$Log2FC >=1, 1, 0)
+the_diff_genes_a8$Down <- ifelse(the_diff_genes_a8$Log2FC <=-1, -1, 0)
+the_diff_genes_a8 <- the_diff_genes_a8[, c(1:2,6:7)] %>% as_tibble()
+a8_Up <- the_diff_genes_a8[the_diff_genes_a8$Up==1,-4] %>% as_tibble()
+colnames(a8_Up) <-c("ID","ID_Name", "Up")
+a8_Down <- the_diff_genes_a8[the_diff_genes_a8$Down==-1,-3] %>% as_tibble()
+colnames(a8_Down) <- c("ID","ID_Name", "Down")
+```
+
+````{r vplota8, fig.cap= "**Fold changes in gene expression between semi-dry biofilm cells and planktonic cells of NCPF8973**"}
+volcano_a8 <- top_hits_df_a8 %>% 
+  mutate(Colour=case_when(c(logFC >=1.5 & adj.P.Val<0.01) ~ "green", 
+                          c(logFC<=-1.5 & adj.P.Val<0.01) ~ "blue"))
+volcano_a8$Colour <- if_else(is.na(volcano_a8$Colour), "black", volcano_a8$Colour)
+
+vplot_a8 <- ggplot(volcano_a8, aes(y=-log10(adj.P.Val), x=logFC, label=Gene))+
+  geom_hline(yintercept=2, linetype=2)+ #add dashed line (type2) to show cut-off of p-values
+  geom_vline(xintercept=-1.5, linetype=2)+ #add dashed line to show cut-off of down-regulated genes
+  geom_vline(xintercept=1.5, linetype=2)+
+  annotate("text", x=7.4, y=2.4, label=nrow(a8_Up), fontface=2, size=4, colour="#96BE25")+ 
+  annotate("text", x=-7.4, y=2.4, label=nrow(a8_Down), fontface=2, size=4, colour="#2596be")+
+  geom_point(aes(colour=Colour),size=1.5, alpha= 0.6) +
+  scale_colour_manual(values = c("blue"="#2596be",
+                                 "green"="#96BE25",
+                                 "black"="black"))+
+  scale_y_continuous(limits=c(0,8.25),breaks=seq(0,8, by=1))+
+  scale_x_continuous(limits=c(-8.5,8.5), breaks=seq(-8,8, by=2))+
+  mdthemes::md_theme_bw()+
+  labs(x="Log<sub>2</sub>-fold change",
+       y="-Log<sub>10</sub>-q value")+
+  theme(plot.margin = margin(t=5,r=5,b=5,l=5),
+        legend.position = "none")
+
+int_vplot_a8 <- ggplotly(vplot_a8) %>%
+  layout(xaxis= list(title= "Fold change in expression (log<sub>2</sub>-corrected)"),
+         yaxis= list(title= "Adjusted p-value (-log<sub>10</sub>-corrected)"))
+int_vplot_a8
+````
+
+<font size='2' color='#317EAC'> Volcano plot depicting the log2-fold change (logFC) in expression against q-values for significance, for all genes expressed in samples of NCPF8978. Dashed lines indicate the cut-offs for determining differential expression, specifically logFC ≥1.5 in either direction (vertical) and q <0.01 (horizontal). Differential gene expression was examined between pre-treated biofilm (TX) cells and planktonic (PK) cells such that positive logFC values denote upregulation in the TX group relative to the PK group (green) and negative logFC, downregulation (blue). </font>
+
+Applying the logFC and  cutoffs identified `r nrow(a8_Up)` genes which were upregulated in TX cells relative to PK, and `r nrow(a8_Down)` genes which were downregulated, as shown in **Fig.** **\@ref(fig:vplota8)**. The remainder of genes, represented as black circles in the volcano plot did not meet either or both of the criteria of $\ge$ 1.5-logFC in either direction, or adjusted p-value $\le$ 0.01.
+
+An interactive table with the average expression for each growth mode, the log-fold change, and the FDR-adjusted p-value of all `r nrow(my_diff_genes_a8)` DEGs, is shown in **Table** <font color='#2FA4E7'> **6.12** </font>.
+
+``` {r DEGs_a8}
+my_diff_genes_a8 <- merge(x=my_diff_genes_a8, y=top_hits_df_a8, by='ID', all.x=TRUE, all.y=FALSE)
+my_diff_genes_a8 <- my_diff_genes_a8%>%
+  dplyr::select('Gene','TX_AVG','PK_AVG','logFC','adj.P.Val')%>%
+  mutate_if(is.numeric, round, 4)
+
+datatable(my_diff_genes_a8,
+              extensions = c('KeyTable', "FixedHeader"),
+              caption = htmltools::tags$caption(style = 'caption-side: top; text-align: left; color:grey',
+                                                htmltools::tags$span("Table 6.12:"),
+                                                htmltools::tags$span("DEGs in pre-treated biofilms of NCPF8978, relative to planktonic cells",
+                                                                     style="font-weight:bold")
+                                                ),
+              colnames = c("Gene", "Pre-treated biofilms", "Planktonic cells",
+                           "Log<sub>2</sub> fold change", "Adjusted p-value"),
+              escape = FALSE, 
+              options = list(keys = TRUE, searchHighlight = TRUE, pageLength = 5, 
+                             lengthMenu = c("5","10", "25", "50", "100")))
+```
+
+
+## Pre-treated vs Untreated SDBs {.tabset .tabset-pills}
+
+### Combined analysis {#DGEa3}
+#### Determining relative expression levels {#limmaa3}
+
+The results of the limma-voom analysis pipeline for all `r nrow(norm_filt_DGEList_a3)` genes in the combined-isolate analysis is given in **Table** <font color='#2FA4E7'>**6.13** </font>. Differential expression was calculated in pre-treated SDB samples (aka 'TX') relative to untreated SDB samples (aka 'UN'), such that a positive logFC represents upregulation in TX, and a negative logFC downregulation in TX (or upregulation in SDB cells). This table can be searched to find the results of all expressed genes within the combined-isolate dataset.
+
+```{r DGEa3}
+design_a3 <- model.matrix(~0 + group_a3)
+colnames(design_a3) <- levels(group_a3)
+
+v_DGEList_filt_norm_a3 <- voom(norm_filt_DGEList_a3, design_a3, plot = FALSE)
+
+fit_a3 <- lmFit(v_DGEList_filt_norm_a3, design_a3)
+
+contrast_matrix_a3 <- makeContrasts(phenotype = TX - UN,
+                                 levels=design_a3)
+
+fits_a3 <- contrasts.fit(fit_a3, contrast_matrix_a3)
+
+eb_fit_a3 <- eBayes(fits_a3)
+
+top_hits_a3 <- topTable(eb_fit_a3, adjust ="BH", coef=1, number=5500, sort.by="logFC")
+top_hits_df_a3 <- top_hits_a3%>% as_tibble(rownames = "ID")
+top_hits_df_a3 <- merge(x=Tx_map, all.x=FALSE, y=top_hits_df_a3, all.y=TRUE, by='ID')
+top_hits_df_a3 <- top_hits_df_a3 %>% dplyr::rename('Gene'='ID_Name')
+
+datatable(top_hits_df_a3[,2:8],
+          extensions = c('KeyTable', "FixedHeader"),
+          caption= htmltools::tags$caption(style='caption-side top; text-align: left; color: grey',
+                                           htmltools::tags$span("Table 6.13"),
+                                           htmltools::tags$span("Outputs of the limma differential gene expression analysis pipeline",
+                                                                style='font-weight: bold')),
+          colnames=c("Gene","Log<sub>2</sub> fold change","Average expression","t","P-value","Adjusted p-value","B"),
+          escape = FALSE,
+          options= list(pageLength=10, searchHighlight=TRUE, keys=TRUE)
+          ) %>% formatSignif(columns = c("logFC", "AveExpr","t","P.Value","adj.P.Val","B"), digits = 3)
+```
+
+#### Selection of DEGs {#resultsa3}
+
+The results of the limma analysis pipeline for all count data are illustrated in the volcano plot in **Fig.** **\@ref(fig:vplota3)**. The logFC in count data for each individual gene was plotted against the adjusted P-value derived from linear modelling; dashed lines represent the cut-offs for DE, specifically logFC between phenotypes was $\ge$ 1.5 in either direction with an adjusted P-value $\le$ 0.01. The green circles represent genes which were upregulated in TX, and red those which were upregulated in UN cells (i.e downregulated in TX). Genes coloured in black did not meet either or both criteria for DEG designation.
+
+``` {r diffgenesa3}
+results_a3 <- decideTests(eb_fit_a3, method="global", adjust.method="BH", p.value=0.01, lfc=1.5)
+
+diff_genes_a3 <- v_DGEList_filt_norm_a3$E[results_a3[,1] !=0,]
+colnames(diff_genes_a3) <- colnames_a3
+
+my_diff_genes_a3 <- diff_genes_a3 %>% as_tibble(rownames = "ID")%>% 
+  mutate(TX_AVG = (TX01 + TX02 + TX03 + TX04 + TX05 + TX06)/6,
+         UN_AVG = (UN01 + UN02 + UN03 + UN04 + UN05 + UN06)/6,
+         Log2FC = (TX_AVG - UN_AVG)) %>% 
+  mutate_if(is.numeric, round, 2)
+my_diff_genes_a3 <- my_diff_genes_a3[,c(1,14:16)] %>% as_tibble()
+my_diff_genes_a3 <- merge(x=Tx_map, y=my_diff_genes_a3, by= 'ID', all.x=FALSE, all.y=TRUE)
+
+the_diff_genes_a3 <- my_diff_genes_a3
+the_diff_genes_a3$Up <-ifelse(the_diff_genes_a3$Log2FC >=1, 1, 0)
+the_diff_genes_a3$Down <- ifelse(the_diff_genes_a3$Log2FC <=-1, -1, 0)
+the_diff_genes_a3 <- the_diff_genes_a3[, c(1:2,6:7)] %>% as_tibble()
+a3_Up <- the_diff_genes_a3[the_diff_genes_a3$Up==1,-4] %>% as_tibble()
+colnames(a3_Up) <-c("ID","ID_Name", "Up")
+a3_Down <- the_diff_genes_a3[the_diff_genes_a3$Down==-1,-3] %>% as_tibble()
+colnames(a3_Down) <- c("ID","ID_Name", "Down")
+```
+
+````{r vplota3, fig.cap= "**Fold changes in gene expression between _Candida auris_ semi-dry biofilm cells and planktonic cells**"}
+volcano_a3 <- top_hits_df_a3 %>% 
+  mutate(Colour=case_when(c(logFC >=1.5 & adj.P.Val<0.01) ~ "green", 
+                          c(logFC<=-1.5 & adj.P.Val<0.01) ~ "red"))
+volcano_a3$Colour <- if_else(is.na(volcano_a3$Colour), "black", volcano_a3$Colour)
+
+vplot_a3 <- ggplot(volcano_a3, aes(y=-log10(adj.P.Val), x=logFC, label=Gene))+
+  geom_hline(yintercept=2, linetype=2)+ #add dashed line (type2) to show cut-off of p-values
+  geom_vline(xintercept=-1.5, linetype=2)+ #add dashed line to show cut-off of down-regulated genes
+  geom_vline(xintercept=1.5, linetype=2)+
+  annotate("text", x=7.4, y=2.4, label=nrow(a3_Up), fontface=2, size=4, colour="#96BE25")+ 
+  annotate("text", x=-7.4, y=2.4, label=nrow(a3_Down), fontface=2, size=4, colour="#EB4034")+
+  geom_point(aes(colour=Colour),size=1.5, alpha= 0.6) +
+  scale_colour_manual(values = c("green"="#96BE25",
+                                 "red"="#EB4034",
+                                 "black"="black"))+
+  scale_y_continuous(limits=c(0,8.25),breaks=seq(0,8, by=1))+
+  scale_x_continuous(limits=c(-8.5,8.5), breaks=seq(-8,8, by=2))+
+  mdthemes::md_theme_bw()+
+  labs(x="Log<sub>2</sub>-fold change",
+       y="-Log<sub>10</sub>-q value")+
+  theme(plot.margin = margin(t=5,r=5,b=5,l=5),
+        legend.position = "none")
+
+int_vplot_a3 <- ggplotly(vplot_a3) %>%
+  layout(xaxis= list(title= "Fold change in expression (log<sub>2</sub>-corrected)"),
+         yaxis= list(title= "Adjusted p-value (-log<sub>10</sub>-corrected)"))
+int_vplot_a3
+````
+
+<font size='2' color='#317EAC'> Volcano plot depicting the log2-fold change (logFC) in expression against q-values for significance, for all genes in the combined data from two _C. auris_ isolates. Dashed lines indicate the cut-offs for determining differential expression, specifically logFC ≥1.5 in either direction (vertical) and q <0.01 (horizontal). Differential gene expression was examined between pre-treated semi-dry biofilm (TX) cells and untreated SDB (UN) cells such that positive logFC values denote upregulation in the TX group relative to the UN group (green) and negative logFC, downregulation (red). </font>
+
+Applying the logFC and  cutoffs demonstrated no differential gene expression between TX and UN cells as shown in **Fig.** **\@ref(fig:vplota3)**. Instead, `r nrow(top_hits_df_a3$logFC>=1.5)` and `r nrow(top_hits_df_a3$logFC<-1.5)`genes were found to meet the logFC cutoff for upregulation or downregulation, respectively, but without significance. 
+
+***
+
+### NCPF8973 {#DGEa6}
+#### Determining relative expression levels {#limmaa6}
+
+Differentially-expressed genes between TX and SDB samples from NCPF8973 were identified using the same pipeline as the combined isolate analysis, as explained above (**Table** <font color='#2FA4E7'>**6.14**</font>). As before, logFC were calculated by comparing the TX samples to the UN samples. A positive logFC therefore indicates upregulation in TX cells of NCPF8973, and vice versa for negative logFC values. This table can be searched to find the results of all expressed genes within the NCPF8973 dataset.
+
+```{r DGEa6}
+design_a6 <- model.matrix(~0 + group_a6)
+colnames(design_a6) <- levels(group_a6)
+
+v_DGEList_filt_norm_a6 <- voom(norm_filt_DGEList_a6, design_a6, plot = FALSE)
+
+fit_a6 <- lmFit(v_DGEList_filt_norm_a6, design_a6)
+
+contrast_matrix_a6 <- makeContrasts(phenotype = TX - UN,
+                                 levels=design_a6)
+
+fits_a6 <- contrasts.fit(fit_a6, contrast_matrix_a6)
+
+eb_fit_a6 <- eBayes(fits_a6)
+
+top_hits_a6 <- topTable(eb_fit_a6, adjust ="BH", coef=1, number=5500, sort.by="logFC")
+top_hits_df_a6 <- top_hits_a6%>% as_tibble(rownames = "ID")
+top_hits_df_a6 <- merge(x=Tx_map, all.x=FALSE, y=top_hits_df_a6, all.y=TRUE, by='ID')
+top_hits_df_a6 <- top_hits_df_a6 %>% dplyr::rename('Gene'='ID_Name')
+
+datatable(top_hits_df_a6[,2:8],
+          extensions = c('KeyTable', "FixedHeader"),
+          caption= htmltools::tags$caption(style='caption-side top; text-align: left; color: grey',
+                                           htmltools::tags$span("Table 6.14"),
+                                           htmltools::tags$span("Outputs of the limma differential gene expression analysis pipeline for NCPF8973 samples",
+                                                                style='font-weight: bold')),
+          colnames=c("Gene","Log<sub>2</sub> fold change","Average expression","t","P-value","Adjusted p-value","B"),
+          escape = FALSE,
+          options= list(pageLength=10, searchHighlight=TRUE, keys=TRUE)
+          ) %>% formatSignif(columns = c("logFC", "AveExpr","t","P.Value","adj.P.Val","B"), digits = 3)
+```
+
+***
+
+#### Selection of DEGs {#resultsa6}
+
+The results of the limma analysis pipeline for samples from NCPF8973 are illustrated in the volcano plot in **Fig.** **\@ref(fig:vplota6)**. Differential gene expression was determined using the same cut-offs as previously.
+
+``` {r diffgenesa6}
+results_a6 <- decideTests(eb_fit_a6, method="global", adjust.method="BH", p.value=0.01, lfc=1.5)
+
+diff_genes_a6 <- v_DGEList_filt_norm_a6$E[results_a6[,1] !=0,]
+colnames(diff_genes_a6) <- colnames_a6
+
+my_diff_genes_a6 <- diff_genes_a6 %>% as_tibble(rownames = "ID")%>% 
+  mutate(TX_AVG = (TX01 + TX02 + TX03)/3,
+         UN_AVG = (UN01 + UN02 + UN03)/3,
+         Log2FC = (TX_AVG - UN_AVG)) %>% 
+  mutate_if(is.numeric, round, 2)
+my_diff_genes_a6 <- my_diff_genes_a6[,c(1,8:10)] %>% as_tibble()
+my_diff_genes_a6 <- merge(x=Tx_map, y=my_diff_genes_a6, by= 'ID', all.x=FALSE, all.y=TRUE)
+
+the_diff_genes_a6 <- my_diff_genes_a6
+the_diff_genes_a6$Up <-ifelse(the_diff_genes_a6$Log2FC >=1, 1, 0)
+the_diff_genes_a6$Down <- ifelse(the_diff_genes_a6$Log2FC <=-1, -1, 0)
+the_diff_genes_a6 <- the_diff_genes_a6[, c(1:2,6:7)] %>% as_tibble()
+a6_Up <- the_diff_genes_a6[the_diff_genes_a6$Up==1,-4] %>% as_tibble()
+colnames(a6_Up) <-c("ID","ID_Name", "Up")
+a6_Down <- the_diff_genes_a6[the_diff_genes_a6$Down==-1,-3] %>% as_tibble()
+colnames(a6_Down) <- c("ID","ID_Name", "Down")
+```
+
+````{r vplota6, fig.cap= "**Fold changes in gene expression between semi-dry biofilm cells and planktonic cells of NCPF8973**"}
+volcano_a6 <- top_hits_df_a6 %>% 
+  mutate(Colour=case_when(c(logFC >=1.5 & adj.P.Val<0.01) ~ "green", 
+                          c(logFC<=-1.5 & adj.P.Val<0.01) ~ "red"))
+volcano_a6$Colour <- if_else(is.na(volcano_a6$Colour), "black", volcano_a6$Colour)
+
+vplot_a6 <- ggplot(volcano_a6, aes(y=-log10(adj.P.Val), x=logFC, label=Gene))+
+  geom_hline(yintercept=2, linetype=2)+ #add dashed line (type2) to show cut-off of p-values
+  geom_vline(xintercept=-1.5, linetype=2)+ #add dashed line to show cut-off of down-regulated genes
+  geom_vline(xintercept=1.5, linetype=2)+
+  annotate("text", x=7.4, y=2.4, label=nrow(a6_Up), fontface=2, size=4, colour="#96be25")+ 
+  annotate("text", x=-7.0, y=2.4, label=nrow(a6_Down), fontface=2, size=4, colour="#EB4034")+
+  geom_point(aes(colour=Colour),size=1.5, alpha= 0.6) +
+  scale_colour_manual(values = c("red"="#EB4034",
+                                 "green"="#96be25",
+                                 "black"="black"))+
+  scale_y_continuous(limits=c(0,8.25),breaks=seq(0,8, by=1))+
+  scale_x_continuous(limits=c(-8.5,8.5), breaks=seq(-8,8, by=2))+
+  mdthemes::md_theme_bw()+
+  labs(x="Log<sub>2</sub>-fold change",
+       y="-Log<sub>10</sub>-q value")+
+  theme(plot.margin = margin(t=5,r=5,b=5,l=5),
+        legend.position = "none")
+
+int_vplot_a6 <- ggplotly(vplot_a6) %>%
+  layout(xaxis= list(title= "Fold change in expression (log<sub>2</sub>-corrected)"),
+         yaxis= list(title= "Adjusted p-value (-log<sub>10</sub>-corrected)"))
+int_vplot_a6
+````
+
+<font size='2' color='#317EAC'> Volcano plot depicting the log2-fold change (logFC) in expression against q-values for significance, for all genes expressed in samples of NCPF8973. Dashed lines indicate the cut-offs for determining differential expression, specifically logFC ≥1.5 in either direction (vertical) and q <0.01 (horizontal). Differential gene expression was examined between pre-treated (TX) and untreated (UN) semi-dry biofilm cells such that positive logFC values denote upregulation in the TX group relative to the UN group (green) and negative logFC, downregulation (red). </font>
+
+Applying the logFC and  cutoffs identified `r nrow(a6_Up)` genes which were upregulated in TX cells relative to UN, and `r nrow(a6_Down)` genes which were downregulated, as shown in **Fig.** **\@ref(fig:vplota6)**. The remainder of genes, represented as black circles in the volcano plot did not meet either or both of the criteria of $\ge$ 1.5-logFC in either direction, or adjusted p-value $\le$ 0.01.
+
+***
+
+### NCPF8978 {#DGEa9}
+#### Determining relative expression levels {#limmaa9}
+
+Data from isolate NCPF8978 samples were also analysed using the limma-voom pipeline, and the outputs can be examined in **Table** <font color='#2Fa5E7'>**6.15** </font>. Expression in pre-treated SDB (TX) samples was compared to the UN samples for all genes, and positive FC values represent upregulation in the TX group. This table can be searched to find the results of all expressed genes within the NCPF8978 dataset.
+
+```{r DGEa9}
+design_a9 <- model.matrix(~0 + group_a9)
+colnames(design_a9) <- levels(group_a9)
+
+v_DGEList_filt_norm_a9 <- voom(norm_filt_DGEList_a9, design_a9, plot = FALSE)
+
+fit_a9 <- lmFit(v_DGEList_filt_norm_a9, design_a9)
+
+contrast_matrix_a9 <- makeContrasts(phenotype = TX - UN,
+                                 levels=design_a9)
+
+fits_a9 <- contrasts.fit(fit_a9, contrast_matrix_a9)
+
+eb_fit_a9 <- eBayes(fits_a9)
+
+top_hits_a9 <- topTable(eb_fit_a9, adjust ="BH", coef=1, number=5500, sort.by="logFC")
+top_hits_df_a9 <- top_hits_a9%>% as_tibble(rownames = "ID")
+top_hits_df_a9 <- merge(x=Tx_map, all.x=FALSE, y=top_hits_df_a9, all.y=TRUE, by='ID')
+top_hits_df_a9 <- top_hits_df_a9 %>% dplyr::rename('Gene'='ID_Name')
+
+datatable(top_hits_df_a9[,2:8],
+          extensions = c('KeyTable', "FixedHeader"),
+          caption= htmltools::tags$caption(style='caption-side top; text-align: left; color: grey',
+                                           htmltools::tags$span("Table 6.15"),
+                                           htmltools::tags$span("Outputs of the limma differential gene expression analysis pipeline for NCPF8978 samples",
+                                                                style='font-weight: bold')),
+          colnames=c("Gene","Log<sub>2</sub> fold change","Average expression","t","P-value","Adjusted p-value","B"),
+          escape = FALSE,
+          options= list(pageLength=10, searchHighlight=TRUE, keys=TRUE)
+          ) %>% formatSignif(columns = c("logFC", "AveExpr","t","P.Value","adj.P.Val","B"), digits = 3)
+```
+
+***
+
+#### Selection of DEGs {#resultsa9}
+
+The results of the limma analysis pipeline for samples from NCPF8973 are illustrated in the volcano plot in **Fig.** **\@ref(fig:vplota9)**. Differential gene expression was determined using the same cut-offs as previously.
+
+``` {r diffgenesa9}
+results_a9 <- decideTests(eb_fit_a9, method="global", adjust.method="BH", p.value=0.01, lfc=1.5)
+
+diff_genes_a9 <- v_DGEList_filt_norm_a9$E[results_a9[,1] !=0,]
+colnames(diff_genes_a9) <- colnames_a9
+
+my_diff_genes_a9 <- diff_genes_a9 %>% as_tibble(rownames = "ID")%>% 
+  mutate(TX_AVG = (TX04 + TX05 + TX06)/3,
+         UN_AVG = (UN04 + UN05 + UN06)/3,
+         Log2FC = (TX_AVG - UN_AVG)) %>% 
+  mutate_if(is.numeric, round, 2)
+my_diff_genes_a9 <- my_diff_genes_a9[,c(1,8:10)] %>% as_tibble()
+my_diff_genes_a9 <- merge(x=Tx_map, y=my_diff_genes_a9, by= 'ID', all.x=FALSE, all.y=TRUE)
+
+the_diff_genes_a9 <- my_diff_genes_a9
+the_diff_genes_a9$Up <-ifelse(the_diff_genes_a9$Log2FC >=1, 1, 0)
+the_diff_genes_a9$Down <- ifelse(the_diff_genes_a9$Log2FC <=-1, -1, 0)
+the_diff_genes_a9 <- the_diff_genes_a9[, c(1:2,6:7)] %>% as_tibble()
+a9_Up <- the_diff_genes_a9[the_diff_genes_a9$Up==1,-4] %>% as_tibble()
+colnames(a9_Up) <-c("ID","ID_Name", "Up")
+a9_Down <- the_diff_genes_a9[the_diff_genes_a9$Down==-1,-3] %>% as_tibble()
+colnames(a9_Down) <- c("ID","ID_Name", "Down")
+```
+
+````{r vplota9, fig.cap= "**Fold changes in gene expression between semi-dry biofilm cells and planktonic cells of NCPF8973**"}
+volcano_a9 <- top_hits_df_a9 %>% 
+  mutate(Colour=case_when(c(logFC >=1.5 & adj.P.Val<0.01) ~ "green", 
+                          c(logFC<=-1.5 & adj.P.Val<0.01) ~ "red"))
+volcano_a9$Colour <- if_else(is.na(volcano_a9$Colour), "black", volcano_a9$Colour)
+
+vplot_a9 <- ggplot(volcano_a9, aes(y=-log10(adj.P.Val), x=logFC, label=Gene))+
+  geom_hline(yintercept=2, linetype=2)+ #add dashed line (type2) to show cut-off of p-values
+  geom_vline(xintercept=-1.5, linetype=2)+ #add dashed line to show cut-off of down-regulated genes
+  geom_vline(xintercept=1.5, linetype=2)+
+  annotate("text", x=7.4, y=2.4, label=nrow(a9_Up), fontface=2, size=4, colour="#96BE25")+ 
+  annotate("text", x=-7.4, y=2.4, label=nrow(a9_Down), fontface=2, size=4, colour="#EB4034")+
+  geom_point(aes(colour=Colour),size=1.5, alpha= 0.6) +
+  scale_colour_manual(values = c("red"="#EB4034",
+                                 "green"="#96BE25",
+                                 "black"="black"))+
+  scale_y_continuous(limits=c(0,8.25),breaks=seq(0,8, by=1))+
+  scale_x_continuous(limits=c(-8.5,8.5), breaks=seq(-8,8, by=2))+
+  mdthemes::md_theme_bw()+
+  labs(x="Log<sub>2</sub>-fold change",
+       y="-Log<sub>10</sub>-q value")+
+  theme(plot.margin = margin(t=5,r=5,b=5,l=5),
+        legend.position = "none")
+
+int_vplot_a9 <- ggplotly(vplot_a9) %>%
+  layout(xaxis= list(title= "Fold change in expression (log<sub>2</sub>-corrected)"),
+         yaxis= list(title= "Adjusted p-value (-log<sub>10</sub>-corrected)"))
+int_vplot_a9
+````
+
+<font size='2' color='#317EAC'> Volcano plot depicting the log2-fold change (logFC) in expression against q-values for significance, for all genes expressed in samples of NCPF8978. Dashed lines indicate the cut-offs for determining differential expression, specifically logFC ≥1.5 in either direction (vertical) and q <0.01 (horizontal). Differential gene expression was examined between pre-treated (TX) and untreated (UN) semi-dry biofilm cells such that positive logFC values denote upregulation in the TX group relative to the UN group (green) and negative logFC, downregulation (red). </font>
+
+Applying the logFC and  cutoffs identified `r nrow(a9_Up)` genes which were upregulated in TX cells relative to UN, and `r nrow(a9_Down)` genes which were downregulated, as shown in **Fig.** **\@ref(fig:vplota9)**. The remainder of genes, represented as black circles in the volcano plot did not meet either or both of the criteria of $\ge$ 1.5-logFC in either direction, or adjusted p-value $\le$ 0.01.
+
+*** 
 
 # Gene Ontology {#GO-analysis .tabset .tabset-pills}
 
@@ -1363,7 +2748,8 @@ everything <- everything %>% dplyr::mutate(GO_category= case_when(Aspect=='P' ~ 
 everything <- everything[,-c(4,6)]
 ```
 
-## Combined data
+## Untreated SDBs vs Planktonic cells {.tabset .tabset-pills}
+### Combined data
 
 ```{r GOprepa1}
 top_hits_df_a1 <- top_hits_df_a1 %>% dplyr::rename('ID_Name'='Gene')
@@ -1388,7 +2774,7 @@ GO enrichment analysis was performed on combined data from both isolates. Only `
 
 ***
 
-### Upregulated in SDBs {#GO_up_all}
+#### Upregulated in SDBs {#GO_up_all}
 
 GO enrichment analysis was performed on the set of upregulated DEGs to elucidate potential functions or pathways of genes that contribute to the formation and/or persistence of SDBs. The results of GO analysis are shown in **Table** <font color='#2FA4E7'> **7.11** </font>.
 
@@ -1488,7 +2874,7 @@ knitr::include_graphics('01_GO_concept_up_a1.png')#{width='35%', height='35%'}
 
 ***
 
-### Downregulated in SDBs {#GO_down}
+#### Downregulated in SDBs {#GO_down}
 
 GO enrichment analysis was performed on the set of downregulated DEGs to determine gene categories or pathways which are less utilised in SDBs relative to planktonic cells. The results of GO analysis are shown in **Table** <font color='#2FA4E7'> **7.12** </font>.
 
@@ -1653,7 +3039,7 @@ knitr::include_graphics('01_GO_concept_down_a1.png')#{width='75%', height='75%'}
 
 ***
 
-## NCPF8973
+### NCPF8973
 
 ```{r GOprepa4}
 top_hits_df_a4 <- top_hits_df_a4 %>% dplyr::rename('ID_Name'='Gene')
@@ -1678,7 +3064,7 @@ GO enrichment analysis was performed on DEGs from NCPF8973. Only `r length(a4_Up
 
 ***
 
-### Upregulated in SDBs 
+#### Upregulated in SDBs 
 
 GO enrichment analysis was performed on the set of upregulated DEGs to elucidate potential functions or pathways of genes that contribute to the formation and/or persistence of SDBs. The results of GO analysis are shown in **Table** <font color='#2FA4E7'> **7.21** </font>.
 
@@ -1770,7 +3156,7 @@ knitr::include_graphics('01_GO_concept_up_a4.png')#{width='35%', height='35%'}
 
 ***
 
-### Downregulated in SDBs
+#### Downregulated in SDBs
 
 GO enrichment analysis was performed on the set of downregulated DEGs from NCPF8973 to determine gene categories or pathways which are less utilised in SDBs relative to planktonic cells. The results of GO analysis are shown in **Table** <font color='#2FA4E7'> **7.22** </font>.
 
@@ -1940,7 +3326,7 @@ knitr::include_graphics('01_GO_concept_down_a4.png')#{width='75%', height='75%'}
 
 ***
 
-## NCPF8978
+### NCPF8978
 
 ```{r GOprepa7}
 top_hits_df_a7 <- top_hits_df_a7 %>% dplyr::rename('ID_Name'='Gene')
@@ -1965,7 +3351,7 @@ GO enrichment analysis was performed on DEGs from NCPF8978. Only `r length(a7_Up
 
 ***
 
-### Upregulated in SDBs 
+#### Upregulated in SDBs 
 
 GO enrichment analysis was performed on the set of upregulated DEGs to elucidate potential functions or pathways of genes that contribute to the formation and/or persistence of SDBs. The results of GO analysis are shown in **Table** <font color='#2FA4E7'> **7.31** </font>.
 
@@ -2138,7 +3524,7 @@ knitr::include_graphics('01_GO_concept_up_a7.png')#{width='35%', height='35%'}
 
 ***
 
-### Downregulated in SDBs
+#### Downregulated in SDBs
 
 GO enrichment analysis was performed on the set of downregulated DEGs from NCPF8978 to determine gene categories or pathways which are less utilised in SDBs relative to planktonic cells. The results of GO analysis are shown in **Table** <font color='#2FA4E7'> **7.32** </font>.
 
